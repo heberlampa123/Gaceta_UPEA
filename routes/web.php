@@ -5,6 +5,7 @@ use App\Http\Controllers\Panel\DocumentoController;
 use App\Http\Controllers\Panel\InicioController;
 use App\Http\Controllers\Panel\PerfilController;
 use App\Http\Controllers\Panel\RolController;
+use App\Http\Controllers\Panel\TipoDocumentalController;
 use App\Http\Controllers\Panel\UsuarioController;
 use App\Http\Controllers\Panel\VersionDocumentoController;
 use Illuminate\Support\Facades\Route;
@@ -56,6 +57,14 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'cuenta'])->group(fu
         Route::post('/documentos/{documento}/versiones', [VersionDocumentoController::class, 'store'])->name('documentos.versiones.store');
         Route::get('/documentos/{documento}/versiones/{version}/archivo', [VersionDocumentoController::class, 'archivo'])->name('documentos.versiones.archivo');
         Route::post('/documentos/{documento}/versiones/{version}/verificar', [VersionDocumentoController::class, 'verificar'])->name('documentos.versiones.verificar');
+    });
+
+    // Tipos documentales (Fase 4)
+    Route::middleware('can:tipo_documental.gestionar')->group(function () {
+        Route::resource('tipos-documentales', TipoDocumentalController::class)
+            ->except(['show', 'destroy'])
+            ->parameters(['tipos-documentales' => 'tipo'])
+            ->names('tipos');
     });
 
     // Usuarios

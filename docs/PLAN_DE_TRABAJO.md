@@ -76,12 +76,14 @@
 - [x] **Sin carga masiva de resoluciones históricas**: el sistema empieza desde ahora (decisión 12/11/2026).
 - [x] 11 pruebas nuevas (49 en total).
 
-### Fase 4 — Tipos documentales (RF-05)
-- [ ] CRUD de tipos documentales con activación/desactivación.
-- [ ] Editor de `campos_adicionales` (nombre, tipo de dato, obligatorio).
-- [ ] Formulario de documento que genera y valida los campos dinámicos según el tipo.
-
-**Entregable:** se puede crear un tipo nuevo (p. ej. «Resolución Rectoral») sin tocar el código.
+### Fase 4 — Tipos documentales (RF-05) ✅ COMPLETADA (12/11/2026)
+- [x] Administración de tipos documentales (permiso `tipo_documental.gestionar`): alta, edición y activación/desactivación. El código no cambia; los tipos no se eliminan.
+- [x] Editor de **campos adicionales** por tipo (máx. 20): etiqueta, nombre interno (generado automáticamente), tipo de dato (texto, texto largo, número, fecha, lista de opciones, sí/no) y obligatorio. Se guardan en `campos_adicionales` (JSONB).
+- [x] El formulario de documentos muestra los campos del tipo elegido, los valida (obligatorios, lista de opciones, número, fecha) y guarda solo los definidos en `documento.metadatos`, convertidos a su tipo de dato.
+- [x] La ficha del documento muestra los campos adicionales con su etiqueta.
+- [x] Los tipos inactivos no se ofrecen al registrar documentos.
+- [x] Auditoría del alta y la modificación de tipos.
+- [x] 7 pruebas nuevas (56 en total).
 
 ### Fase 5 — Flujo de revisión y publicación (RF-03, RF-07)
 - [ ] Servicio de **máquina de estados** con las 5 transiciones permitidas (sección 4.4.10); cualquier otra se rechaza.

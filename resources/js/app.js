@@ -3,10 +3,13 @@ import 'bootstrap-icons/font/bootstrap-icons.min.css';
 import '../css/app.css'; // después de Bootstrap, para que nuestros estilos tengan prioridad
 import * as bootstrap from 'bootstrap';
 import './bootstrap';
+import { iniciarCamposAdicionales } from './campos-adicionales';
 
 window.bootstrap = bootstrap;
 
 document.addEventListener('DOMContentLoaded', () => {
+    iniciarCamposAdicionales();
+
     // Confirmación para acciones sensibles: <form data-confirmar="¿Seguro?">
     document.querySelectorAll('form[data-confirmar]').forEach((form) => {
         form.addEventListener('submit', (evento) => {

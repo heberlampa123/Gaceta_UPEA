@@ -81,6 +81,21 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 
 ---
 
+## Fase 4 — Tipos documentales
+
+| Función | Detalle | Archivo(s) |
+|---|---|---|
+| **Administración de tipos** | Crear, editar y activar/desactivar tipos documentales. El código no cambia y los tipos no se eliminan. | **Controlador:** `app/Http/Controllers/Panel/TipoDocumentalController.php` (`index` :20, `store` :32, `update` :52)<br>**Pantallas:** `resources/views/panel/tipos/` (`index`, `create`, `edit`, `_form`)<br>**Rutas:** `routes/web.php` (sección «Tipos documentales», `/panel/tipos-documentales`) |
+| **Validación del tipo y sus campos** | Código único en mayúsculas, nombre único, campos con nombre interno válido y sin repetir, listas con al menos dos opciones, máximo 20 campos. | `app/Http/Requests/GuardarTipoDocumentalRequest.php` (máximo de campos :16, normalización :23, regla de las listas :82, datos a guardar :116) |
+| **Tipos de dato disponibles** | Texto corto, texto largo, número, fecha, lista de opciones y sí/no. | `app/Models/TipoDocumental.php:23` (`TIPOS_CAMPO`) |
+| **Editor de campos (agregar/quitar filas)** | Nombre interno generado desde la etiqueta («N.º de sesión» → `no_de_sesion`); las opciones se muestran solo para listas. | **Fila de un campo:** `resources/views/panel/tipos/_campo.blade.php`<br>**JavaScript:** `resources/js/campos-adicionales.js` (`nombreInterno` :12, editor :23) |
+| **Campos en el formulario de documentos** | Se muestran solo los campos del tipo elegido. | **Vista:** `resources/views/panel/documentos/_metadatos.blade.php`<br>**JavaScript que alterna los campos:** `resources/js/campos-adicionales.js:79` |
+| **Validación y guardado de los valores** | Obligatorios, opciones válidas, número y fecha; se guardan solo los campos definidos, convertidos a su tipo. | **Reglas:** `TipoDocumental.php:67` (`reglasMetadatos`)<br>**Conversión:** `TipoDocumental.php:97` (`normalizarMetadatos`)<br>**Uso en el formulario:** `app/Http/Requests/GuardarDocumentoRequest.php:89` (`datosDocumento`) |
+| **Visualización en la ficha** | Etiqueta y valor con formato (Sí/No, fecha dd/mm/aaaa). | **Formato:** `TipoDocumental.php:121` (`formatearValor`)<br>**Vista:** `resources/views/panel/documentos/show.blade.php` (sección «Datos del documento») |
+| **Pruebas** | Permisos, alta con campos, validaciones, edición, uso en documentos, tipos inactivos. | `tests/Feature/Panel/TipoDocumentalTest.php` |
+
+---
+
 ## Cambios frecuentes
 
 | Si se solicita… | Cambiar esto |
@@ -95,6 +110,8 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 | Otro tamaño máximo de PDF | `.env` → `GACETA_PDF_MAX_MB` (y ajustar `upload_max_filesize` / `post_max_size` en `php.ini`) |
 | Otro valor por defecto de «Instancia emisora» | `config/gaceta.php` → `instancia_emisora_predeterminada` |
 | Permitir editar en otros estados | `app/Models/Documento.php` → `ESTADOS_EDITABLES` |
+| Agregar un nuevo tipo de dato para los campos (ej.: correo) | `TipoDocumental.php` → `TIPOS_CAMPO`, `reglasMetadatos`, `normalizarMetadatos`, `formatearValor` + `_metadatos.blade.php` (campo del formulario) |
+| Cambiar el máximo de campos por tipo | `GuardarTipoDocumentalRequest.php` → `MAX_CAMPOS` |
 | Cambiar los datos del administrador inicial | `.env` (`ADMIN_USUARIO`, `ADMIN_CORREO`, `ADMIN_CONTRASENA`) |
 
 ---

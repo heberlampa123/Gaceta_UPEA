@@ -72,6 +72,10 @@
                     <dt class="col-sm-4">Fecha de emisión</dt><dd class="col-sm-8">{{ $documento->fecha_emision->format('d/m/Y') }}</dd>
                     <dt class="col-sm-4">Instancia emisora</dt><dd class="col-sm-8">{{ $documento->instancia_emisora ?? '—' }}</dd>
                     <dt class="col-sm-4">Descripción</dt><dd class="col-sm-8">{!! nl2br(e($documento->descripcion ?? '—')) !!}</dd>
+                    @foreach ($documento->tipoDocumental->campos() as $campo)
+                        <dt class="col-sm-4">{{ $campo['etiqueta'] }}</dt>
+                        <dd class="col-sm-8">{{ \App\Models\TipoDocumental::formatearValor($campo, $documento->metadatos[$campo['nombre']] ?? null) }}</dd>
+                    @endforeach
                     <dt class="col-sm-4">Registrado por</dt><dd class="col-sm-8">{{ $documento->usuarioRegistro->nombre_completo }} · {{ $documento->fecha_registro->format('d/m/Y H:i') }}</dd>
                     <dt class="col-sm-4">Última modificación</dt><dd class="col-sm-8">{{ $documento->fecha_actualizacion->format('d/m/Y H:i') }}</dd>
                     @if ($documento->fecha_publicacion)

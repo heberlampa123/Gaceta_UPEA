@@ -11,7 +11,7 @@
         ['seccion' => 'Documentos'],
         ['texto' => 'Gestión documental', 'icono' => 'folder2-open', 'permiso' => 'documento.ver', 'ruta' => 'panel.documentos.index', 'activa' => 'panel.documentos.*'],
         ['texto' => 'Revisión y publicación', 'icono' => 'clipboard-check', 'permiso' => 'documento.revisar', 'fase' => 5],
-        ['texto' => 'Tipos documentales', 'icono' => 'tags', 'permiso' => 'tipo_documental.gestionar', 'fase' => 4],
+        ['texto' => 'Tipos documentales', 'icono' => 'tags', 'permiso' => 'tipo_documental.gestionar', 'ruta' => 'panel.tipos.index', 'activa' => 'panel.tipos.*'],
         ['seccion' => 'Administración'],
         ['texto' => 'Usuarios', 'icono' => 'people', 'permiso' => 'usuario.gestionar', 'ruta' => 'panel.usuarios.index', 'activa' => 'panel.usuarios.*'],
         ['texto' => 'Roles y permisos', 'icono' => 'shield-lock', 'permiso' => 'rol.gestionar', 'ruta' => 'panel.roles.index', 'activa' => 'panel.roles.*'],

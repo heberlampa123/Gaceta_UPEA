@@ -61,7 +61,7 @@ class DocumentoController extends Controller
 
     public function store(GuardarDocumentoRequest $request): RedirectResponse
     {
-        $documento = $this->gestion->registrar($request->validated(), $request->file('archivo'), $request->user());
+        $documento = $this->gestion->registrar($request->datosDocumento(), $request->file('archivo'), $request->user());
 
         return redirect()->route('panel.documentos.show', $documento)
             ->with('exito', "Se registró {$documento->nombreCorto()} en estado Borrador.");
@@ -95,7 +95,7 @@ class DocumentoController extends Controller
 
     public function update(GuardarDocumentoRequest $request, Documento $documento): RedirectResponse
     {
-        $this->gestion->actualizar($documento, $request->validated());
+        $this->gestion->actualizar($documento, $request->datosDocumento());
 
         return redirect()->route('panel.documentos.show', $documento)->with('exito', 'Se actualizaron los datos del documento.');
     }

@@ -2,7 +2,7 @@
 <div class="row g-3">
     <div class="col-md-6">
         <label for="id_tipo_documental" class="form-label">Tipo documental <span class="text-danger">*</span></label>
-        <select id="id_tipo_documental" name="id_tipo_documental" required
+        <select id="id_tipo_documental" name="id_tipo_documental" required data-selector-tipo
                 @class(['form-select', 'is-invalid' => $errors->has('id_tipo_documental')])>
             @foreach ($tipos as $tipo)
                 <option value="{{ $tipo->id_tipo_documental }}" @selected(old('id_tipo_documental', $documento->id_tipo_documental) == $tipo->id_tipo_documental)>{{ $tipo->nombre }}</option>
@@ -47,6 +47,8 @@
         <div class="form-text">Se usa en la búsqueda por palabras clave.</div>
         @error('descripcion') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
+
+    @include('panel.documentos._metadatos')
 
     @unless ($documento->exists)
         <div class="col-12">

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Documento;
+use App\Models\TipoDocumental;
 use App\Support\LimitesArchivo;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -34,6 +35,8 @@ class GuardarDocumentoRequest extends FormRequest
         $documento = $this->route('documento');
 
         return [
+            ...$this->tipoSeleccionado()?->reglasMetadatos() ?? [],
+            'metadatos' => ['nullable', 'array'],
             'id_tipo_documental' => ['required', 'integer', Rule::exists('tipo_documental', 'id_tipo_documental')->where('activo', true)],
             'numero' => [
                 'required', 'string', 'max:30', 'regex:/^[A-Za-z0-9][A-Za-z0-9\-\/\.]*$/',
@@ -57,6 +60,7 @@ class GuardarDocumentoRequest extends FormRequest
     public function attributes(): array
     {
         return [
+            ...$this->tipoSeleccionado()?->atributosMetadatos() ?? [],
             'id_tipo_documental' => 'tipo documental',
             'numero' => 'número',
             'gestion' => 'gestión',
@@ -76,5 +80,22 @@ class GuardarDocumentoRequest extends FormRequest
             'archivo.max' => 'El archivo PDF no debe superar los '.config('gaceta.documentos.pdf_max_mb').' MB.',
             'archivo.uploaded' => 'No se pudo subir el archivo. Verifique que no supere '.LimitesArchivo::pdfMaxEfectivoMb().' MB.',
         ];
+    }
+
+    /**
+     * Datos validados, con los metadatos filtrados y convertidos según los campos
+     * adicionales del tipo documental elegido (Fase 4).
+     */
+    public function datosDocumento(): array
+    {
+        $datos = $this->validated();
+        $datos['metadatos'] = $this->tipoSeleccionado()?->normalizarMetadatos($datos['metadatos'] ?? []);
+
+        return $datos;
+    }
+
+    private function tipoSeleccionado(): ?TipoDocumental
+    {
+        return once(fn () => TipoDocumental::find((int) $this->input('id_tipo_documental')));
     }
 }
