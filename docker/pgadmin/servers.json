@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Gaceta UPEA (Docker)",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "gaceta_upea",
+      "Username": "gaceta",
+      "SSLMode": "prefer"
+    }
+  }
+}
+
