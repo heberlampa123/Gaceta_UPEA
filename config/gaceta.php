@@ -16,4 +16,14 @@ return [
         'contrasena' => env('ADMIN_CONTRASENA'),
     ],
 
+    // Documentos oficiales y sus archivos PDF (Fase 3).
+    'documentos' => [
+        // Tamaño máximo de cada PDF, en MB (también debe permitirlo PHP: upload_max_filesize y post_max_size).
+        'pdf_max_mb' => (int) env('GACETA_PDF_MAX_MB', 20),
+        // Disco de Laravel donde se guardan los PDF ("local" = storage/app/private, no accesible desde la web).
+        'disco' => env('GACETA_DISCO_DOCUMENTOS', 'local'),
+        'carpeta' => 'documentos',
+        'instancia_emisora_predeterminada' => 'Honorable Consejo Universitario',
+    ],
+
 ];

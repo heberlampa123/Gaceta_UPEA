@@ -64,14 +64,17 @@
 - [x] Layout del panel con Bootstrap 5 y menú según permisos (Figura 2); portal público provisional.
 - [x] 24 pruebas nuevas (38 en total).
 
-### Fase 3 — Gestión documental y versiones (RF-02, RF-04)
-- [ ] Registro de resolución: tipo, número, gestión, fecha de emisión, título, descripción, instancia emisora, metadatos dinámicos.
-- [ ] Carga de PDF: validación MIME/tamaño, nombre único, disco **privado** (`storage/app/private`), cálculo de `hash_sha256` y `tamano_bytes`.
-- [ ] Nueva versión en una transacción: la anterior deja de ser vigente, `numero_version` correlativo, `motivo_cambio` obligatorio.
-- [ ] Listado interno con filtros por estado/gestión; ficha con historial de versiones.
-- [ ] Edición permitida solo en estados `BORRADOR` y `OBSERVADO`.
-
-**Entregable:** el Encargado registra una resolución y gestiona sus versiones de PDF.
+### Fase 3 — Gestión documental y versiones (RF-02, RF-04) ✅ COMPLETADA (12/11/2026)
+- [x] Registro de documentos con su PDF (versión 1) en estado Borrador: tipo, número, gestión, fecha de emisión, título, descripción e instancia emisora.
+- [x] PDF de **hasta 20 MB** (decisión 12/11/2026): validación de extensión, tipo MIME y contenido real (`%PDF-`); guardado en disco privado con nombre único (`documentos/{gestión}/{uuid}.pdf`), tamaño y huella SHA-256.
+- [x] Nuevas versiones en una transacción: la anterior deja de ser vigente y se conserva; motivo obligatorio; se rechaza un archivo idéntico al vigente.
+- [x] Edición de datos y carga de versiones solo en Borrador u Observado (`DocumentoPolicy`).
+- [x] Listado con búsqueda por palabras clave y filtros (estado, gestión, tipo); ficha con visor PDF, historial de versiones, seguimiento y **verificación de integridad**.
+- [x] PDF servido solo a usuarios autenticados con permiso (nunca por URL pública).
+- [x] Registro en seguimiento (REGISTRO, NUEVA_VERSION) y en auditoría.
+- [x] `DemoSeeder` con 20 resoluciones y sus PDF.
+- [x] **Sin carga masiva de resoluciones históricas**: el sistema empieza desde ahora (decisión 12/11/2026).
+- [x] 11 pruebas nuevas (49 en total).
 
 ### Fase 4 — Tipos documentales (RF-05)
 - [ ] CRUD de tipos documentales con activación/desactivación.
@@ -149,7 +152,7 @@ Se realiza al final, cuando todas las funciones estén terminadas.
 2. **Retiro de documentos publicados:** está diferido a versiones posteriores (sección 2.5). Confirmar.
 3. ~~**Bloqueo temporal de cuenta**~~ ✅ Resuelto: campo `bloqueado_hasta` (automático + desbloqueo por el administrador).
 4. ~~**Recuperación de contraseña**~~ ✅ Resuelto: la restablece el administrador y el usuario debe cambiarla (`debe_cambiar_contrasena`).
-5. **Tamaño máximo de PDF** y si los documentos escaneados necesitan OCR para la búsqueda por contenido (en la V1 la búsqueda es solo por metadatos).
+5. ~~**Tamaño máximo de PDF**~~ ✅ Resuelto: 20 MB. Pendiente: si los documentos escaneados necesitan OCR (en la V1 la búsqueda es solo por metadatos).
 6. **Filtro por instancia emisora:** el atributo existe para el filtrado, pero no figura en los filtros del portal (Figura 3). Se incluyó en la Fase 6.
-7. **Carga de resoluciones históricas:** ¿habrá una migración masiva de resoluciones antiguas? Podría requerir una carga por lotes.
+7. ~~**Carga de resoluciones históricas**~~ ✅ Resuelto: no se requiere; el sistema empieza desde ahora.
 8. ~~**Laravel y `usuario`**~~ ✅ Resuelto en la Fase 1 (`config/auth.php` usa `App\Models\Usuario`).

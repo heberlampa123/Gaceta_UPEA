@@ -46,6 +46,21 @@ class SeguimientoDocumento extends Model
         return ['fecha' => 'datetime'];
     }
 
+    /** Nombres legibles de las acciones, para el historial del documento (2.4). */
+    public const ETIQUETAS = [
+        self::ACCION_REGISTRO => 'Registro del documento',
+        self::ACCION_ENVIO_REVISION => 'Envío a revisión',
+        self::ACCION_DEVOLUCION => 'Devolución con observaciones',
+        self::ACCION_APROBACION => 'Aprobación para publicación',
+        self::ACCION_PUBLICACION => 'Publicación',
+        self::ACCION_NUEVA_VERSION => 'Nueva versión del PDF',
+    ];
+
+    public function etiqueta(): string
+    {
+        return self::ETIQUETAS[$this->accion] ?? ucfirst(mb_strtolower(str_replace('_', ' ', $this->accion)));
+    }
+
     public function documento(): BelongsTo
     {
         return $this->belongsTo(Documento::class, 'id_documento', 'id_documento');

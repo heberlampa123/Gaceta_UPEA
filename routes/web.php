@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Panel\DocumentoController;
 use App\Http\Controllers\Panel\InicioController;
 use App\Http\Controllers\Panel\PerfilController;
 use App\Http\Controllers\Panel\RolController;
 use App\Http\Controllers\Panel\UsuarioController;
+use App\Http\Controllers\Panel\VersionDocumentoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -40,6 +42,21 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'cuenta'])->group(fu
     Route::get('/perfil', [PerfilController::class, 'show'])->name('perfil');
     Route::get('/perfil/contrasena', [PerfilController::class, 'editarContrasena'])->name('perfil.contrasena');
     Route::put('/perfil/contrasena', [PerfilController::class, 'actualizarContrasena'])->name('perfil.contrasena.actualizar');
+
+    // Gestión documental (Fase 3)
+    Route::middleware('can:documento.ver')->group(function () {
+        Route::get('/documentos', [DocumentoController::class, 'index'])->name('documentos.index');
+        Route::get('/documentos/registrar', [DocumentoController::class, 'create'])->middleware('can:documento.registrar')->name('documentos.create');
+        Route::post('/documentos', [DocumentoController::class, 'store'])->middleware('can:documento.registrar')->name('documentos.store');
+        Route::get('/documentos/{documento}', [DocumentoController::class, 'show'])->name('documentos.show');
+        // Edición y nuevas versiones: el permiso y el estado del documento se verifican en DocumentoPolicy.
+        Route::get('/documentos/{documento}/editar', [DocumentoController::class, 'edit'])->name('documentos.edit');
+        Route::put('/documentos/{documento}', [DocumentoController::class, 'update'])->name('documentos.update');
+
+        Route::post('/documentos/{documento}/versiones', [VersionDocumentoController::class, 'store'])->name('documentos.versiones.store');
+        Route::get('/documentos/{documento}/versiones/{version}/archivo', [VersionDocumentoController::class, 'archivo'])->name('documentos.versiones.archivo');
+        Route::post('/documentos/{documento}/versiones/{version}/verificar', [VersionDocumentoController::class, 'verificar'])->name('documentos.versiones.verificar');
+    });
 
     // Usuarios
     Route::middleware('can:usuario.gestionar')->group(function () {

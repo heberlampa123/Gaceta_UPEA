@@ -109,6 +109,22 @@ class Documento extends Model
         return $this->hasMany(Notificacion::class, 'id_documento', 'id_documento');
     }
 
+    // ----------------------------------------------------------------- Reglas
+
+    /** Estados en los que el Encargado puede modificar datos o cargar nuevas versiones. */
+    public const ESTADOS_EDITABLES = [EstadoDocumento::BORRADOR, EstadoDocumento::OBSERVADO];
+
+    public function esEditable(): bool
+    {
+        return $this->activo && in_array($this->estadoActual?->codigo, self::ESTADOS_EDITABLES, true);
+    }
+
+    /** Ej.: "Resolución del HCU N.º 025/2026". */
+    public function nombreCorto(): string
+    {
+        return trim(($this->tipoDocumental?->nombre ?? 'Documento').' N.º '.$this->numero);
+    }
+
     // ----------------------------------------------------------------- Consultas
 
     public function scopeActivos(Builder $query): Builder

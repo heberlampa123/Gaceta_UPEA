@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Middleware\VerificarCuenta;
+use App\Support\LimitesArchivo;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\PostTooLargeException;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -23,5 +26,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo(fn () => route('panel.inicio'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // El envío supera post_max_size de PHP (por ejemplo, un PDF demasiado grande).
+        $exceptions->render(function (PostTooLargeException $e, Request $request) {
+            $mensaje = 'El archivo supera el tamaño máximo que permite el servidor ('.LimitesArchivo::pdfMaxEfectivoMb().' MB).';
+
+            return $request->expectsJson()
+                ? response()->json(['message' => $mensaje], 413)
+                : back()->with('error', $mensaje);
+        });
     })->create();

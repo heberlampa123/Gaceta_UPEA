@@ -57,6 +57,30 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 
 ---
 
+## Fase 3 — Gestión documental y versiones
+
+| Función | Detalle | Archivo(s) |
+|---|---|---|
+| **Lógica central** | Registrar, modificar, agregar versiones y verificar integridad. Todo pasa por este servicio. | `app/Services/GestionDocumental.php` |
+| **Registro de documentos** | Con su PDF (versión 1), en estado Borrador. | **Lógica:** `GestionDocumental::registrar`<br>**Controlador:** `app/Http/Controllers/Panel/DocumentoController.php` (`create`, `store`)<br>**Pantallas:** `resources/views/panel/documentos/create.blade.php` y `_form.blade.php` |
+| **Validaciones del documento** | Campos obligatorios, formato del número, número único por gestión, tipo de archivo. | `app/Http/Requests/GuardarDocumentoRequest.php` |
+| **Tamaño máximo del PDF** | 20 MB (también debe permitirlo PHP). | `.env` (`GACETA_PDF_MAX_MB`) → `config/gaceta.php` (`documentos`)<br>Límite real considerando PHP: `app/Support/LimitesArchivo.php` |
+| **Dónde se guardan los PDF** | `storage/app/private/documentos/{gestión}/{uuid}.pdf` (no accesible desde la web). | Carpeta y disco: `config/gaceta.php`<br>Guardado y control del contenido `%PDF-`: `GestionDocumental::guardarArchivo` |
+| **Nuevas versiones** | La anterior deja de ser vigente y se conserva; motivo obligatorio; no se acepta un archivo idéntico. | **Lógica:** `GestionDocumental::agregarVersion`<br>**Validación:** `app/Http/Requests/NuevaVersionRequest.php`<br>**Controlador:** `app/Http/Controllers/Panel/VersionDocumentoController.php` (`store`) |
+| **Quién puede editar y cuándo** | Permiso `documento.editar` y solo en Borrador u Observado. | `app/Policies/DocumentoPolicy.php`<br>Estados editables: `app/Models/Documento.php` (`ESTADOS_EDITABLES`) |
+| **Ver y descargar el PDF** | Solo usuarios con sesión y permiso `documento.ver`. | `VersionDocumentoController.php` (`archivo`; nombre del archivo descargado) |
+| **Verificar integridad** | Compara la huella SHA-256 actual con la registrada. | `GestionDocumental::verificarIntegridad` y `VersionDocumentoController.php` (`verificar`) |
+| **Listado y filtros** | Búsqueda por palabras clave, estado, gestión y tipo. | `DocumentoController.php` (`index`)<br>Pantalla: `resources/views/panel/documentos/index.blade.php` |
+| **Ficha del documento** | Visor PDF, datos, versiones y seguimiento. | `resources/views/panel/documentos/show.blade.php` |
+| **Colores de los estados** | Insignia de color por estado. | `resources/views/panel/documentos/_estado.blade.php` |
+| **Nombres de las acciones del seguimiento** | «Registro del documento», «Nueva versión del PDF», … | `app/Models/SeguimientoDocumento.php` (`ETIQUETAS`) |
+| **Mensaje cuando el archivo supera el límite de PHP** | Error amigable en lugar de la página de error. | `bootstrap/app.php` (`PostTooLargeException`) |
+| **Rutas** | `/panel/documentos/...` | `routes/web.php` (sección «Gestión documental») |
+| **Datos de demostración** | 20 resoluciones con PDF generados. | `database/seeders/DemoSeeder.php`<br>Generador de PDF simple: `app/Support/PdfSimple.php` |
+| **Pruebas** | Registro, validaciones, versiones, edición por estado, archivos, integridad y búsqueda. | `tests/Feature/Panel/GestionDocumentalTest.php` |
+
+---
+
 ## Cambios frecuentes
 
 | Si se solicita… | Cambiar esto |
@@ -68,6 +92,9 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 | Agregar un permiso nuevo | `database/seeders/RolesYPermisosSeeder.php` y luego `php artisan db:seed --class=RolesYPermisosSeeder` |
 | Cambiar un texto de error del inicio de sesión | `app/Http/Controllers/Auth/LoginController.php` (constante `MENSAJE_CREDENCIALES` y método `mensajeBloqueo`) |
 | Cambiar el nombre visible de un estado | `database/seeders/EstadoDocumentoSeeder.php` (el código no se cambia) |
+| Otro tamaño máximo de PDF | `.env` → `GACETA_PDF_MAX_MB` (y ajustar `upload_max_filesize` / `post_max_size` en `php.ini`) |
+| Otro valor por defecto de «Instancia emisora» | `config/gaceta.php` → `instancia_emisora_predeterminada` |
+| Permitir editar en otros estados | `app/Models/Documento.php` → `ESTADOS_EDITABLES` |
 | Cambiar los datos del administrador inicial | `.env` (`ADMIN_USUARIO`, `ADMIN_CORREO`, `ADMIN_CONTRASENA`) |
 
 ---

@@ -9,7 +9,7 @@
     $menu = [
         ['texto' => 'Inicio', 'icono' => 'house', 'ruta' => 'panel.inicio', 'activa' => 'panel.inicio'],
         ['seccion' => 'Documentos'],
-        ['texto' => 'Gestión documental', 'icono' => 'folder2-open', 'permiso' => 'documento.ver', 'fase' => 3],
+        ['texto' => 'Gestión documental', 'icono' => 'folder2-open', 'permiso' => 'documento.ver', 'ruta' => 'panel.documentos.index', 'activa' => 'panel.documentos.*'],
         ['texto' => 'Revisión y publicación', 'icono' => 'clipboard-check', 'permiso' => 'documento.revisar', 'fase' => 5],
         ['texto' => 'Tipos documentales', 'icono' => 'tags', 'permiso' => 'tipo_documental.gestionar', 'fase' => 4],
         ['seccion' => 'Administración'],
