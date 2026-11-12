@@ -12,9 +12,11 @@ services:
       TZ: America/La_Paz
       PGTZ: America/La_Paz
     ports:
-      - "${DB_PORT:-5433}:5432"
+      - "${DB_PORT:-5434}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      # Scripts que se ejecutan solo al crear el volumen por primera vez (base de pruebas)
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s

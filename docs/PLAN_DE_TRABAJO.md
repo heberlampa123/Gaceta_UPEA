@@ -22,33 +22,28 @@
 
 ## 2. Fases
 
-### Fase 0 — Preparación del entorno ✅ COMPLETADA (12/11/2026)
-- [x] Laravel 13 instalado en `C:\SigGacetaUniv`.
-- [x] Repositorio Git (`main`).
-- [x] `docker-compose.yml`: PostgreSQL 17 (puerto **5434** en Windows; 5432 y 5433 ya estaban ocupados) y pgAdmin 4 (http://localhost:5050) con el servidor registrado previamente.
-- [x] `.env` / `.env.example`: conexión `pgsql`, `APP_LOCALE=es`, `APP_FAKER_LOCALE=es_ES`; zona horaria `America/La_Paz` en `config/app.php`.
-- [x] Sanctum instalado (`routes/api.php`, tabla `personal_access_tokens`).
-- [x] Tailwind reemplazado por Bootstrap 5.3 (Vite).
-- [x] Traducciones al español (`laravel-lang/common`, carpeta `lang/es`).
-- [x] Verificado: página en :8000 (200), API protegida (401 sin token), pgAdmin (200), migraciones en PostgreSQL y `php artisan test` aprobado.
+### Fase 0 — Preparación del entorno ✅ casi listo
+Verificado en el equipo: PHP 8.4.26 (con `pdo_pgsql`), Composer 2.10, Docker 29.8, Git 2.56, Node 24.
 
-### Fase 1 — Base de datos (diseño físico)
-Implementar las 13 tablas del modelo 3FN como migraciones.
+- [ ] Iniciar Docker Desktop (el daemon no responde actualmente).
+- [ ] `git init` + `.gitignore`, rama `main` y ramas por módulo (`feature/...`).
+- [ ] Crear proyecto Laravel 13 en `C:\SigGacetaUniv`.
+- [ ] `docker-compose.yml` con PostgreSQL 17 (+ pgAdmin opcional) y volumen persistente.
+- [ ] Configurar `.env` (conexión `pgsql`, `APP_LOCALE=es`, zona horaria `America/La_Paz`).
+- [ ] Instalar Sanctum, Bootstrap 5 (Vite) y paquete de idioma español para validaciones.
 
-- [ ] Migraciones en orden de dependencias: `rol`, `permiso`, `usuario`, `usuario_rol`, `rol_permiso`, `tipo_documental`, `estado_documento`, `documento`, `version_documento`, `seguimiento_documento`, `observacion`, `notificacion`, `auditoria`.
-- [ ] Columnas `JSONB`: `tipo_documental.campos_adicionales`, `documento.metadatos`, `auditoria.detalle`.
-- [ ] Restricciones de integridad (sección 4.4.15):
-  - `UNIQUE (id_tipo_documental, numero, gestion)` en documento.
-  - `UNIQUE (id_documento, numero_version)` en version_documento.
-  - Índice único parcial: `CREATE UNIQUE INDEX ... ON version_documento (id_documento) WHERE es_vigente`.
-  - `CHECK` de observación atendida: `respuesta`, `id_usuario_atiende`, `fecha_atencion` todos NULL o todos NOT NULL.
-  - FK opcionales solo donde lo indica el documento.
-- [ ] Protección de tablas solo-inserción (`auditoria`, `seguimiento_documento`): trigger que impida `UPDATE`/`DELETE`.
-- [ ] Índices de búsqueda: `gestion`, `fecha_emision`, `id_estado_actual`, y búsqueda de texto completo (`tsvector` en español sobre `titulo`, `descripcion`, `numero`).
-- [ ] Modelos Eloquent con relaciones; adaptar el modelo `User` de Laravel a la tabla `usuario` (`contrasena_hash`, `nombre_usuario`).
-- [ ] Seeders: 3 roles, catálogo de permisos, 5 estados, tipo `RES_HCU`, usuario administrador inicial; factories para datos de prueba.
+**Entregable:** proyecto corriendo en `localhost` conectado a PostgreSQL.
 
-**Entregable:** `php artisan migrate --seed` crea la BD completa y coincide con la Figura 9 del análisis.
+### Fase 1 — Base de datos (diseño físico) ✅ COMPLETADA (12/11/2026)
+- [x] 13 migraciones (una por entidad) en orden de dependencias; la tabla `users` de Laravel se reemplazó por `usuario`.
+- [x] Columnas `JSONB`: `tipo_documental.campos_adicionales`, `documento.metadatos`, `auditoria.detalle`.
+- [x] Restricciones (4.4.15): unicidad tipo-número-gestión, `(id_documento, numero_version)` único, índice único parcial de versión vigente, `CHECK` de observación atendida, `CHECK` de número de versión y tamaño.
+- [x] Triggers: `seguimiento_documento` y `auditoria` solo admiten inserciones; un estado con documentos no puede desactivarse.
+- [x] Índice GIN de búsqueda de texto completo en español (número, título, descripción).
+- [x] 11 modelos Eloquent con relaciones; `Usuario` como modelo de autenticación (`contrasena_hash`, `nombre_usuario`) y `tienePermiso()` por código.
+- [x] Seeders: 3 roles, 12 permisos, 5 estados, tipo `RES_HCU`, administrador inicial (datos en `.env` → `config/gaceta.php`). `DemoSeeder` con usuarios y 20 resoluciones de prueba.
+- [x] Pruebas sobre PostgreSQL (`gaceta_upea_test`): 12 pruebas del modelo de datos.
+- [x] **Decisiones agregadas al modelo:** `usuario.bloqueado_hasta` (bloqueo automático de 15 min tras 5 intentos, el administrador puede desbloquear antes) y `usuario.debe_cambiar_contrasena` (el administrador restablece la contraseña; el usuario debe cambiarla al entrar).
 
 ### Fase 2 — Seguridad y administración (RF-01, RNF-01)
 - [ ] Login con `nombre_usuario` o correo; sin registro público (cuentas solo por el administrador).
@@ -132,9 +127,9 @@ Implementar las 13 tablas del modelo 3FN como migraciones.
 
 1. **Sustitución de un PDF ya publicado:** la sección 4.4.9 exige «autorización correspondiente», pero no hay transición desde `PUBLICADO`. Proponer: nueva versión → vuelve a `PENDIENTE_REVISION` (manteniendo visible la versión publicada anterior) o dejarlo fuera de la V1.
 2. **Retiro de documentos publicados:** está diferido a versiones posteriores (sección 2.5). Confirmar.
-3. **Bloqueo temporal de cuenta:** existe `intentos_fallidos`, pero falta un campo como `bloqueado_hasta` (o definir que el desbloqueo lo hace el administrador). Se recomienda agregarlo.
-4. **Recuperación de contraseña:** no está definida. Opción simple: el administrador restablece la contraseña y se obliga a cambiarla en el siguiente inicio de sesión (campo `debe_cambiar_contrasena`).
+3. ~~**Bloqueo temporal de cuenta**~~ ✅ Resuelto: campo `bloqueado_hasta` (automático + desbloqueo por el administrador).
+4. ~~**Recuperación de contraseña**~~ ✅ Resuelto: la restablece el administrador y el usuario debe cambiarla (`debe_cambiar_contrasena`).
 5. **Tamaño máximo de PDF** y si los documentos escaneados necesitan OCR para la búsqueda por contenido (en la V1 la búsqueda es solo por metadatos).
 6. **Filtro por instancia emisora:** el atributo existe para el filtrado, pero no figura en los filtros del portal (Figura 3). Se incluyó en la Fase 6.
 7. **Carga de resoluciones históricas:** ¿habrá una migración masiva de resoluciones antiguas? Podría requerir una carga por lotes.
-8. **Laravel y `usuario`:** el modelo usa `contrasena_hash` y `nombre_usuario`. Es compatible, pero exige configurar el modelo de autenticación (no se usa la tabla `users` por defecto).
+8. ~~**Laravel y `usuario`**~~ ✅ Resuelto en la Fase 1 (`config/auth.php` usa `App\Models\Usuario`).
