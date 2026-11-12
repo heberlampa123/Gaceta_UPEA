@@ -23,7 +23,19 @@ class Auditoria extends Model
 
     public const DESACTIVAR = 'DESACTIVAR';
 
+    public const ACTIVAR = 'ACTIVAR';
+
     public const PUBLICAR = 'PUBLICAR';
+
+    public const BLOQUEO_CUENTA = 'BLOQUEO_CUENTA';
+
+    public const DESBLOQUEO_CUENTA = 'DESBLOQUEO_CUENTA';
+
+    public const RESTABLECER_CONTRASENA = 'RESTABLECER_CONTRASENA';
+
+    public const CAMBIO_CONTRASENA = 'CAMBIO_CONTRASENA';
+
+    public const CAMBIO_PERMISOS = 'CAMBIO_PERMISOS';
 
     protected $table = 'auditoria';
 
@@ -48,6 +60,28 @@ class Auditoria extends Model
             'detalle' => 'array',
             'fecha' => 'datetime',
         ];
+    }
+
+    /** Nombres legibles de las acciones, para mostrarlos en pantalla. */
+    public const ETIQUETAS = [
+        self::INICIO_SESION => 'Inicio de sesión',
+        self::INICIO_SESION_FALLIDO => 'Intento fallido de inicio de sesión',
+        self::CIERRE_SESION => 'Cierre de sesión',
+        self::CREAR => 'Creación',
+        self::MODIFICAR => 'Modificación',
+        self::DESACTIVAR => 'Desactivación',
+        self::ACTIVAR => 'Activación',
+        self::PUBLICAR => 'Publicación',
+        self::BLOQUEO_CUENTA => 'Bloqueo de cuenta',
+        self::DESBLOQUEO_CUENTA => 'Desbloqueo de cuenta',
+        self::RESTABLECER_CONTRASENA => 'Restablecimiento de contraseña',
+        self::CAMBIO_CONTRASENA => 'Cambio de contraseña',
+        self::CAMBIO_PERMISOS => 'Cambio de permisos',
+    ];
+
+    public function etiqueta(): string
+    {
+        return self::ETIQUETAS[$this->accion] ?? ucfirst(mb_strtolower(str_replace('_', ' ', $this->accion)));
     }
 
     public function usuario(): BelongsTo

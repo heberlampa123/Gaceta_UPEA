@@ -2,7 +2,7 @@
 
 > Basado en: *Sistema Web Integral de Gestión de la Gaceta Universitaria de la UPEA* (análisis, 35 págs.) y *Normalización de la Base de Datos* (10 págs.).
 > Alcance: **Versión 1 — Resoluciones del HCU**.
-> Stack: Laravel 13 · PHP 8.3+ · PostgreSQL (Docker) · Eloquent · Blade + Bootstrap 5 · API REST con Sanctum · Git.
+> Stack: Laravel 13 · PHP 8.3+ · PostgreSQL (Docker) · Eloquent · Blade + Bootstrap 5 · API REST con Sanctum · **Axios** · Git.
 
 ---
 
@@ -20,19 +20,26 @@
 
 ---
 
-## 2. Fases
+## 2. Decisiones técnicas
 
-### Fase 0 — Preparación del entorno ✅ casi listo
-Verificado en el equipo: PHP 8.4.26 (con `pdo_pgsql`), Composer 2.10, Docker 29.8, Git 2.56, Node 24.
+| Tema | Decisión | Motivo |
+|---|---|---|
+| Peticiones sin recargar la página | **Axios** (no `fetch`) en todo el sistema. | Ya viene configurado en Laravel (`resources/js/bootstrap.js`, `window.axios`), envía el token CSRF automáticamente, convierte JSON y maneja los errores de validación (422). |
+| Formularios del panel | Formularios Blade tradicionales (envío y recarga). | Más simples de validar y auditar; Axios solo donde el análisis pide actualizar sin recargar. |
+| Diseño visual | El diseño actual es **provisional y funcional**. El diseño definitivo se realiza en la **Fase 9**. | Primero se prioriza el funcionamiento; los estilos están centralizados para cambiarlos al final sin rehacer pantallas. |
 
-- [ ] Iniciar Docker Desktop (el daemon no responde actualmente).
-- [ ] `git init` + `.gitignore`, rama `main` y ramas por módulo (`feature/...`).
-- [ ] Crear proyecto Laravel 13 en `C:\SigGacetaUniv`.
-- [ ] `docker-compose.yml` con PostgreSQL 17 (+ pgAdmin opcional) y volumen persistente.
-- [ ] Configurar `.env` (conexión `pgsql`, `APP_LOCALE=es`, zona horaria `America/La_Paz`).
-- [ ] Instalar Sanctum, Bootstrap 5 (Vite) y paquete de idioma español para validaciones.
+---
 
-**Entregable:** proyecto corriendo en `localhost` conectado a PostgreSQL.
+## 3. Fases
+
+### Fase 0 — Preparación del entorno ✅ COMPLETADA (12/11/2026)
+- [x] Laravel 13 instalado en `C:\SigGacetaUniv`.
+- [x] Repositorio Git (`main`) publicado en GitHub.
+- [x] `docker-compose.yml`: PostgreSQL 17 (puerto **5434** en Windows; 5432 y 5433 ya estaban ocupados) y pgAdmin 4 (http://localhost:5050) con el servidor registrado previamente.
+- [x] `.env` / `.env.example`: conexión `pgsql`, `APP_LOCALE=es`, `APP_FAKER_LOCALE=es_ES`; zona horaria `America/La_Paz` en `config/app.php`.
+- [x] Sanctum instalado (`routes/api.php`, tabla `personal_access_tokens`).
+- [x] Tailwind reemplazado por Bootstrap 5.3 (Vite); Axios disponible como `window.axios`.
+- [x] Traducciones al español (`laravel-lang/common`, carpeta `lang/es`).
 
 ### Fase 1 — Base de datos (diseño físico) ✅ COMPLETADA (12/11/2026)
 - [x] 13 migraciones (una por entidad) en orden de dependencias; la tabla `users` de Laravel se reemplazó por `usuario`.
@@ -45,16 +52,17 @@ Verificado en el equipo: PHP 8.4.26 (con `pdo_pgsql`), Composer 2.10, Docker 29.
 - [x] Pruebas sobre PostgreSQL (`gaceta_upea_test`): 12 pruebas del modelo de datos.
 - [x] **Decisiones agregadas al modelo:** `usuario.bloqueado_hasta` (bloqueo automático de 15 min tras 5 intentos, el administrador puede desbloquear antes) y `usuario.debe_cambiar_contrasena` (el administrador restablece la contraseña; el usuario debe cambiarla al entrar).
 
-### Fase 2 — Seguridad y administración (RF-01, RNF-01)
-- [ ] Login con `nombre_usuario` o correo; sin registro público (cuentas solo por el administrador).
-- [ ] Bloqueo temporal por `intentos_fallidos`; actualización de `ultimo_acceso`.
-- [ ] Middleware/Gates que verifican **códigos de permiso** (`documento.registrar`, `documento.revisar`, `documento.publicar`, `usuario.gestionar`, ...), nunca nombres de rol.
-- [ ] CRUD de usuarios con desactivación lógica (sin borrado físico).
-- [ ] Gestión de roles y asignación de permisos.
-- [ ] Mi perfil: datos y cambio de contraseña.
-- [ ] Layout del panel (Bootstrap 5) con menú según permisos (Figura 2).
-
-**Entregable:** el administrador crea cuentas y cada rol ve solo lo que le corresponde.
+### Fase 2 — Seguridad y administración (RF-01, RNF-01) ✅ COMPLETADA (12/11/2026)
+- [x] Inicio de sesión con nombre de usuario o correo; sin registro público. Límite de 10 intentos por minuto por IP.
+- [x] Bloqueo automático de 15 minutos tras 5 intentos fallidos (`bloqueado_hasta`); el administrador puede desbloquear antes. Se actualiza `ultimo_acceso`.
+- [x] Cambio obligatorio de la contraseña temporal (`debe_cambiar_contrasena`) y expulsión de cuentas desactivadas (middleware `cuenta`).
+- [x] Autorización por **código de permiso** con `Gate::before` (`@can('usuario.gestionar')`, `can:` en rutas).
+- [x] Usuarios: listado con filtros, alta con contraseña temporal (generada o asignada), edición, roles, desactivar/activar, desbloquear y restablecer contraseña. Protecciones: no desactivarse a sí mismo y no dejar el sistema sin administradores.
+- [x] Roles: alta, edición y asignación de permisos agrupados por módulo; el código del rol no cambia; el rol ADMIN no se desactiva y conserva sus permisos críticos.
+- [x] Mi perfil: datos, permisos y cambio de contraseña (mín. 8 caracteres con letras y números).
+- [x] Auditoría de inicio/cierre de sesión, intentos fallidos, bloqueos, altas, modificaciones (valores anteriores y nuevos), cambios de roles y permisos.
+- [x] Layout del panel con Bootstrap 5 y menú según permisos (Figura 2); portal público provisional.
+- [x] 24 pruebas nuevas (38 en total).
 
 ### Fase 3 — Gestión documental y versiones (RF-02, RF-04)
 - [ ] Registro de resolución: tipo, número, gestión, fecha de emisión, título, descripción, instancia emisora, metadatos dinámicos.
@@ -86,13 +94,13 @@ Verificado en el equipo: PHP 8.4.26 (con `pdo_pgsql`), Composer 2.10, Docker 29.
 - [ ] Página pública (Figura 3): encabezado institucional, buscador, filtros (tipo, gestión, número, fecha de emisión, instancia emisora), listado paginado.
 - [ ] Solo muestra documentos en estados con `es_publico = true` y `activo = true`.
 - [ ] Ficha del documento con visor PDF embebido y descarga, servidos por controlador (nunca la ruta directa del archivo) y solo la versión vigente.
-- [ ] Endpoints API JSON públicos de búsqueda (con *rate limiting*), consumidos por JavaScript para filtrar sin recargar.
+- [ ] Endpoints API JSON públicos de búsqueda (con *rate limiting*), consumidos con **Axios** para filtrar sin recargar.
 
 **Entregable:** cualquier visitante busca, ve y descarga resoluciones publicadas.
 
 ### Fase 7 — Notificaciones, auditoría y tablero (RF-08, RF-09)
 - [ ] Notificaciones: `NUEVO_PENDIENTE` → usuarios con permiso de revisar; `OBSERVADO` y `APROBADO` → encargado que registró; `PUBLICADO` → encargado (y revisores).
-- [ ] Campana con contador de no leídas (API + Sanctum, consulta periódica), marcar como leída.
+- [ ] Campana con contador de no leídas (API + Sanctum, consulta periódica con **Axios**), marcar como leída.
 - [ ] Auditoría automática (observers/eventos): inicio de sesión (exitoso y fallido), crear, modificar, desactivar, cambios de permisos, publicar; con valores anteriores y nuevos en `detalle` y la IP.
 - [ ] Consulta de auditoría con filtros (usuario, acción, entidad, fechas).
 - [ ] Tablero de inicio: conteos por estado, pendientes del usuario, actividad reciente.
@@ -106,9 +114,20 @@ Verificado en el equipo: PHP 8.4.26 (con `pdo_pgsql`), Composer 2.10, Docker 29.
 - [ ] Manual de usuario por rol, manual técnico y guía de despliegue.
 - [ ] Definir con la unidad responsable el servidor de producción y las copias de seguridad (BD + archivos PDF).
 
+### Fase 9 — Diseño visual definitivo (RNF-04)
+Se realiza al final, cuando todas las funciones estén terminadas.
+- [ ] Obtener de la Gaceta / UPEA: logo oficial (SVG o PNG transparente), colores institucionales y, si existe, manual de identidad visual.
+- [ ] Definir la paleta y tipografía definitivas en `resources/css/app.css` (variables `--gaceta-*`).
+- [ ] Rediseñar las plantillas comunes: `resources/views/layouts/base.blade.php` y `panel.blade.php` (menú, barra superior, pie).
+- [ ] Diseño definitivo del portal público y de la pantalla de inicio de sesión.
+- [ ] Revisión de accesibilidad (contraste, navegación con teclado) y de pantallas pequeñas (celular).
+- [ ] Validación del diseño con el personal de la Gaceta.
+
+**Entregable:** interfaz con la identidad institucional de la UPEA, aprobada por la Gaceta.
+
 ---
 
-## 3. Cronograma estimado (referencial)
+## 4. Cronograma estimado (referencial)
 
 | Semana | Fase |
 |---|---|
@@ -120,10 +139,11 @@ Verificado en el equipo: PHP 8.4.26 (con `pdo_pgsql`), Composer 2.10, Docker 29.
 | 7 | 6 — Portal público |
 | 8 | 7 — Notificaciones y auditoría |
 | 9–10 | 8 — Pruebas, ajustes y documentación |
+| 11 | 9 — Diseño visual definitivo |
 
 ---
 
-## 4. Puntos a validar con la Gaceta / vacíos detectados en el análisis
+## 5. Puntos a validar con la Gaceta / vacíos detectados en el análisis
 
 1. **Sustitución de un PDF ya publicado:** la sección 4.4.9 exige «autorización correspondiente», pero no hay transición desde `PUBLICADO`. Proponer: nueva versión → vuelve a `PENDIENTE_REVISION` (manteniendo visible la versión publicada anterior) o dejarlo fuera de la V1.
 2. **Retiro de documentos publicados:** está diferido a versiones posteriores (sección 2.5). Confirmar.
