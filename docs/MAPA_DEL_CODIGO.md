@@ -155,6 +155,20 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 
 ---
 
+## Fase 8 — Pruebas, ajustes y documentación
+
+| Función | Detalle | Archivo(s) |
+|---|---|---|
+| **Cabeceras de seguridad** | Protección contra incrustación, tipos de archivo, referencias y permisos del navegador; HSTS en producción con HTTPS. | `app/Http/Middleware/CabecerasSeguridad.php`; registro en `bootstrap/app.php` |
+| **Páginas de error** | 403, 404, 419, 429, 500 y 503 en español. | `resources/views/errors/` (diseño común: `plantilla.blade.php`) |
+| **Índices de búsqueda por fragmentos** | `pg_trgm` en número y título. | `database/migrations/2026_11_13_100001_agregar_indices_trigramas_documento.php` |
+| **Respaldo** | Base de datos + PDF + resumen; elimina los antiguos. | **Comando:** `app/Console/Commands/RespaldoGaceta.php`<br>**Configuración:** `config/gaceta.php` (`respaldos`) y `.env` (`GACETA_RESPALDO_*`)<br>**Programación diaria:** `routes/console.php` |
+| **Manuales** | Usuario por rol, técnico, instalación y despliegue. | Markdown: `docs/manuales/*.md`<br>Word: `docs/manuales/word/*.docx`<br>Regenerar Word: `docs/manuales/herramientas/` |
+| **Presentación del proyecto** | Descripción, inicio rápido y enlaces a la documentación. | `README.md` |
+| **Pruebas** | Cabeceras, páginas de error y respaldo. | `tests/Feature/SeguridadYRespaldoTest.php` |
+
+---
+
 ## Cambios frecuentes
 
 | Si se solicita… | Cambiar esto |
@@ -183,6 +197,9 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 | Mostrar más avisos en la campana | `Api/NotificacionController.php:18` (`RECIENTES`) |
 | Agregar un pendiente al tablero | `InicioController.php` (agregar un `$pendientes->push([...])`) |
 | Acceder por otra dirección (IP de la red) y que funcione la campana | `.env` → `SANCTUM_STATEFUL_DOMAINS` (agregar la dirección con su puerto) |
+| Cambiar la hora del respaldo diario | `routes/console.php` (`dailyAt('02:00')`) |
+| Conservar respaldos más o menos días | `.env` → `GACETA_RESPALDO_DIAS` |
+| Cambiar un texto de las páginas de error | `resources/views/errors/<código>.blade.php` |
 | Cambiar los datos del administrador inicial | `.env` (`ADMIN_USUARIO`, `ADMIN_CORREO`, `ADMIN_CONTRASENA`) |
 
 ---

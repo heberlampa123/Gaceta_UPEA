@@ -26,4 +26,16 @@ return [
         'instancia_emisora_predeterminada' => 'Honorable Consejo Universitario',
     ],
 
+    // Respaldos de la base de datos y de los PDF (Fase 8): php artisan gaceta:respaldo
+    'respaldos' => [
+        // Carpeta donde se guardan (una subcarpeta por respaldo, con fecha y hora).
+        'carpeta' => env('GACETA_RESPALDO_CARPETA', storage_path('app/respaldos')),
+        // Días que se conservan los respaldos; los más antiguos se eliminan.
+        'dias_retencion' => (int) env('GACETA_RESPALDO_DIAS', 30),
+        // Desarrollo con Docker: nombre del contenedor de PostgreSQL (usa su pg_dump).
+        // Producción: dejar vacío para usar pg_dump instalado en el servidor.
+        'contenedor_docker' => env('GACETA_RESPALDO_CONTENEDOR'),
+        'pg_dump' => env('GACETA_PG_DUMP', 'pg_dump'),
+    ],
+
 ];

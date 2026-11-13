@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CabecerasSeguridad;
 use App\Http\Middleware\VerificarCuenta;
 use App\Support\LimitesArchivo;
 use Illuminate\Foundation\Application;
@@ -23,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Sanctum: las rutas de /api reconocen la sesión del panel (para las llamadas con Axios),
         // con protección CSRF, cuando la petición viene de un dominio configurado (config/sanctum.php).
         $middleware->statefulApi();
+
+        // Cabeceras de seguridad en todas las respuestas (Fase 8).
+        $middleware->append(CabecerasSeguridad::class);
 
         // Visitantes sin sesión que intentan entrar al panel → inicio de sesión.
         // Usuarios con sesión que abren /login → panel.

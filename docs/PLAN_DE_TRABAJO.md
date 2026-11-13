@@ -117,12 +117,17 @@
 - [x] `APP_URL=http://localhost:8000` (necesario para que Sanctum reconozca la sesión en `localhost:8000`).
 - [x] 8 pruebas nuevas (80 en total).
 
-### Fase 8 — Pruebas, ajustes y documentación
-- [ ] Pruebas automatizadas (Pest/PHPUnit): transiciones válidas e inválidas, permisos por rol, versión vigente única, visibilidad pública, unicidad del documento.
-- [ ] Pruebas con usuarios de la Gaceta (aceptación) y ajustes de usabilidad (RNF-04).
-- [ ] Revisión de rendimiento de búsquedas con datos de volumen realista (RNF-02).
-- [ ] Manual de usuario por rol, manual técnico y guía de despliegue.
-- [ ] Definir con la unidad responsable el servidor de producción y las copias de seguridad (BD + archivos PDF).
+### Fase 8 — Pruebas, ajustes y documentación ✅ COMPLETADA (13/11/2026)
+- [x] **Seguridad:** cabeceras en todas las respuestas (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`; HSTS en producción con HTTPS).
+- [x] **Páginas de error en español** (403, 404, 419, 429, 500, 503); el mensaje genérico de Laravel se traduce.
+- [x] **Rendimiento (RNF-02):** prueba con 20.000 documentos. Índices de trigramas (`pg_trgm`) para la búsqueda por fragmentos: peor caso de ~90 ms a ~8 ms.
+- [x] **Respaldos:** comando `php artisan gaceta:respaldo` (base de datos con `pg_dump` + ZIP de los PDF + resumen con huellas SHA-256), retención de 30 días y ejecución diaria a las 02:00. Probado y verificado con `pg_restore`.
+- [x] **Producción:** configuración recomendada en `.env.example` y guía completa (Nginx, PHP-FPM, PostgreSQL, HTTPS, tareas programadas, restauración, actualización).
+- [x] **Manuales** en Markdown (`docs/manuales/`) y en Word (`docs/manuales/word/`): manual de usuario por rol, manual técnico y guía de instalación y despliegue. Herramientas para regenerar los Word en `docs/manuales/herramientas/`.
+- [x] `README.md` propio del sistema.
+- [x] 4 pruebas nuevas (84 en total).
+- [ ] Pruebas con usuarios de la Gaceta (aceptación) — con la base de desarrollo recreada y los datos de demostración.
+- [ ] Definir con la unidad responsable el servidor de producción.
 
 ### Fase 9 — Diseño visual definitivo (RNF-04)
 Se realiza al final, cuando todas las funciones estén terminadas.
