@@ -23,6 +23,11 @@ class SeguimientoDocumento extends Model
 
     public const ACCION_NUEVA_VERSION = 'NUEVA_VERSION';
 
+    public const ACCION_ANULACION = 'ANULACION';
+
+    /** Otra norma publicada abrogó, derogó o modificó este documento (relaciones entre normas). */
+    public const ACCION_AFECTACION = 'AFECTACION';
+
     protected $table = 'seguimiento_documento';
 
     protected $primaryKey = 'id_seguimiento';
@@ -54,6 +59,8 @@ class SeguimientoDocumento extends Model
         self::ACCION_APROBACION => 'Aprobación para publicación',
         self::ACCION_PUBLICACION => 'Publicación',
         self::ACCION_NUEVA_VERSION => 'Nueva versión del PDF',
+        self::ACCION_ANULACION => 'Anulación del borrador',
+        self::ACCION_AFECTACION => 'Afectada por otra norma',
     ];
 
     public function etiqueta(): string

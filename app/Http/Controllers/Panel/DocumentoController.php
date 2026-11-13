@@ -7,6 +7,7 @@ use App\Http\Requests\GuardarDocumentoRequest;
 use App\Models\Documento;
 use App\Models\EstadoDocumento;
 use App\Models\TipoDocumental;
+use App\Models\TipoRelacionDocumental;
 use App\Services\GestionDocumental;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +26,10 @@ class DocumentoController extends Controller
         $documentos = Documento::query()
             ->activos()
             ->with(['tipoDocumental', 'estadoActual', 'usuarioRegistro'])
+            // Marca «No vigente» en el listado (normas abrogadas por otra ya publicada).
+            ->when(Documento::relacionesHabilitadas(), fn (Builder $q) => $q->withExists([
+                'relacionesRecibidas as abrogado' => fn (Builder $r) => $r->efectivas()->queQuitanVigencia(),
+            ]))
             ->when($filtros['buscar'] ?? null, fn (Builder $q, string $texto) => $q->where(fn (Builder $w) => $w
                 ->buscar($texto)
                 ->orWhere('numero', 'ilike', '%'.$texto.'%')))
@@ -83,7 +88,19 @@ class DocumentoController extends Controller
             'observaciones.version',
         ]);
 
-        return view('panel.documentos.show', ['documento' => $documento]);
+        if (Documento::relacionesHabilitadas()) {
+            $documento->load([
+                'relacionesEmitidas' => fn ($q) => $q->with(['tipo', 'destino.tipoDocumental', 'origen.estadoActual']),
+                // Las normas anuladas (borradores registrados por error) no afectan a nadie.
+                'relacionesRecibidas' => fn ($q) => $q->whereHas('origen', fn ($o) => $o->activos())
+                    ->with(['tipo', 'origen.tipoDocumental', 'origen.estadoActual']),
+            ]);
+        }
+
+        return view('panel.documentos.show', [
+            'documento' => $documento,
+            'tiposRelacion' => TipoRelacionDocumental::activos()->get(),
+        ]);
     }
 
     public function edit(Documento $documento): View
@@ -94,6 +111,22 @@ class DocumentoController extends Controller
             'documento' => $documento,
             'tipos' => TipoDocumental::activos()->orWhere('id_tipo_documental', $documento->id_tipo_documental)->orderBy('nombre')->get(),
         ]);
+    }
+
+    /** Anula un borrador registrado por error (corrección 13/11/2026). */
+    public function anular(Request $request, Documento $documento): RedirectResponse
+    {
+        $this->autorizarEnFlujo('anular', $documento);
+        $datos = $request->validate(
+            ['motivo' => ['required', 'string', 'min:5', 'max:300']],
+            ['motivo.required' => 'Indique el motivo de la anulación.'],
+            ['motivo' => 'motivo'],
+        );
+
+        $this->gestion->anular($documento, $datos['motivo'], $request->user());
+
+        return redirect()->route('panel.documentos.index')
+            ->with('exito', "Se anuló el borrador {$documento->numero}. Su número quedó disponible.");
     }
 
     public function update(GuardarDocumentoRequest $request, Documento $documento): RedirectResponse

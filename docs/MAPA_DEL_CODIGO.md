@@ -169,6 +169,43 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 
 ---
 
+## Revisión de brechas (13/11/2026)
+
+| Corrección | Archivo(s) |
+|---|---|
+| 1. Campos obligatorios antes de enviar o aprobar | `app/Models/TipoDocumental.php` (`camposObligatoriosFaltantes`) y `app/Services/FlujoDocumental.php` (`ejecutar`) |
+| 2. Anular borrador | `app/Services/GestionDocumental.php` (`anular`), `app/Http/Controllers/Panel/DocumentoController.php` (`anular`), `app/Policies/DocumentoPolicy.php` (`anular`), `resources/views/panel/documentos/_flujo.blade.php`; unicidad solo entre activos: `database/migrations/2026_11_13_120001_unicidad_documento_solo_activos.php` |
+| 3. Editar borrador de un tipo desactivado | `app/Http/Requests/GuardarDocumentoRequest.php` (regla de `id_tipo_documental`) |
+| 4. Usuario sin distinguir mayúsculas | `app/Http/Controllers/Auth/LoginController.php` (`store`) |
+| 5. Bloqueo que no revela cuentas | `LoginController.php` (`bloqueoSimulado`, `sumarIntentoSimulado`) |
+| 6. Cerrar otras sesiones al cambiar la contraseña | `routes/web.php` (middleware `auth.session` del panel) y `UsuarioController.php` (`restablecerContrasena`: revoca tokens) |
+| 7. Política de seguridad de contenido | `app/Http/Middleware/CabecerasSeguridad.php` (`POLITICA_CONTENIDO`) |
+| 8 y 9. Coherencia de gestión, fecha y número | `GuardarDocumentoRequest.php` (`after`) |
+| 10. Doble clic | Servidor: `app/Http/Controllers/Controller.php` (`autorizarEnFlujo`) y `DocumentoPolicy.php` (`CODIGO_ESTADO`); navegador: `resources/js/app.js` |
+| Pruebas de regresión | `tests/Feature/CorreccionesRevisionTest.php` |
+
+---
+
+## Relaciones entre normas: abroga, deroga, modifica (13/11/2026)
+
+Una resolución nueva (origen) **abroga**, **deroga parcialmente** o **modifica** a otra ya publicada (destino). No es una versión: es otro documento con su propio número. La vigencia **no se guarda, se calcula**: una norma deja de ser vigente cuando otra ya publicada la abroga. El portal público muestra solo normas vigentes (sin filtro de vigencia).
+
+| Función | Detalle | Archivo(s) |
+|---|---|---|
+| Tablas | `tipo_relacion_documental` (catálogo) y `relacion_documental` (origen, destino, tipo, detalle) | `database/migrations/2026_11_13_150001_create_relaciones_documentales.php` |
+| Tipos de relación | Abroga (quita vigencia), Deroga parcialmente y Modifica (exigen indicar la parte afectada) | `database/seeders/TipoRelacionDocumentalSeeder.php:17` |
+| Vigencia calculada | `esVigente()`, `scopeVigentes()`, `scopeVisiblesEnPortal()` | `app/Models/Documento.php:138`, `:169`, `:179` |
+| Reglas al registrar | Norma afectada publicada, vigente, anterior y sin relación previa; detalle obligatorio según el tipo | `app/Services/RelacionesDocumentales.php:32` |
+| Buscador de normas (Axios) | Panel → ficha del documento | `RelacionesDocumentales.php:90`, `resources/js/relaciones-documentales.js` |
+| Rutas | Candidatos, registrar y quitar (mismo permiso y estados que «Editar datos») | `routes/web.php:84`, `app/Http/Controllers/Panel/RelacionDocumentalController.php` |
+| Panel | Tarjeta «Relación con otras normas», aviso y marca «No vigente» | `resources/views/panel/documentos/_relaciones.blade.php`, `show.blade.php`, `index.blade.php`, `DocumentoController.php:31` |
+| Portal | Solo vigentes; ficha con «Derogada parcialmente por…», «Modificada por…» | `app/Services/ConsultaPublica.php`, `PortalController.php`, `resources/views/portal/_relaciones.blade.php` |
+| Historial | Al publicarse la nueva, se anota «Abrogada por…» en el seguimiento de la afectada | `app/Listeners/RegistrarEfectoDeRelaciones.php:21` |
+| Activar / desactivar | `GACETA_RELACIONES=false` oculta todo y las abrogadas vuelven al portal (los datos se conservan) | `config/gaceta.php:33` |
+| Pruebas | 6 pruebas | `tests/Feature/Panel/RelacionesDocumentalesTest.php` |
+
+---
+
 ## Cambios frecuentes
 
 | Si se solicita… | Cambiar esto |
@@ -200,6 +237,9 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 | Cambiar la hora del respaldo diario | `routes/console.php` (`dailyAt('02:00')`) |
 | Conservar respaldos más o menos días | `.env` → `GACETA_RESPALDO_DIAS` |
 | Cambiar un texto de las páginas de error | `resources/views/errors/<código>.blade.php` |
+| Agregar un tipo de relación (ej.: «Complementa») | Una línea en `database/seeders/TipoRelacionDocumentalSeeder.php` y `php artisan db:seed --class=TipoRelacionDocumentalSeeder` |
+| Retirar un tipo de relación | En el mismo seeder, último valor (`activo`) en `false` y volver a ejecutarlo |
+| Desactivar las relaciones entre normas | `.env` → `GACETA_RELACIONES=false` y `php artisan config:clear` |
 | Cambiar los datos del administrador inicial | `.env` (`ADMIN_USUARIO`, `ADMIN_CORREO`, `ADMIN_CONTRASENA`) |
 
 ---

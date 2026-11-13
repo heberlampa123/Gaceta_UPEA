@@ -109,6 +109,18 @@ class Documento extends Model
         return $this->hasMany(Notificacion::class, 'id_documento', 'id_documento');
     }
 
+    /** Normas anteriores que este documento abroga, deroga o modifica. */
+    public function relacionesEmitidas(): HasMany
+    {
+        return $this->hasMany(RelacionDocumental::class, 'id_documento_origen', 'id_documento');
+    }
+
+    /** Normas posteriores que abrogan, derogan o modifican a este documento. */
+    public function relacionesRecibidas(): HasMany
+    {
+        return $this->hasMany(RelacionDocumental::class, 'id_documento_destino', 'id_documento');
+    }
+
     // ----------------------------------------------------------------- Reglas
 
     /** Estados en los que el Encargado puede modificar datos o cargar nuevas versiones. */
@@ -117,6 +129,21 @@ class Documento extends Model
     public function esEditable(): bool
     {
         return $this->activo && in_array($this->estadoActual?->codigo, self::ESTADOS_EDITABLES, true);
+    }
+
+    /**
+     * Vigencia calculada (no se guarda): un documento deja de ser vigente cuando otro documento
+     * publicado lo abroga. Con las relaciones deshabilitadas, todo documento se considera vigente.
+     */
+    public function esVigente(): bool
+    {
+        return ! self::relacionesHabilitadas()
+            || ! $this->relacionesRecibidas()->efectivas()->queQuitanVigencia()->exists();
+    }
+
+    public static function relacionesHabilitadas(): bool
+    {
+        return (bool) config('gaceta.relaciones.habilitado', true);
     }
 
     /** Ej.: "Resolución del HCU N.º 025/2026". */
@@ -136,6 +163,22 @@ class Documento extends Model
     public function scopePublicados(Builder $query): Builder
     {
         return $query->activos()->whereHas('estadoActual', fn (Builder $q) => $q->where('es_publico', true));
+    }
+
+    /** Documentos que ninguna norma publicada ha abrogado. */
+    public function scopeVigentes(Builder $query): Builder
+    {
+        if (! self::relacionesHabilitadas()) {
+            return $query;
+        }
+
+        return $query->whereDoesntHave('relacionesRecibidas', fn (Builder $r) => $r->efectivas()->queQuitanVigencia());
+    }
+
+    /** Lo que ve el público: publicados, activos y vigentes (las normas abrogadas no se muestran). */
+    public function scopeVisiblesEnPortal(Builder $query): Builder
+    {
+        return $query->publicados()->vigentes();
     }
 
     public function scopeEnEstado(Builder $query, string $codigoEstado): Builder

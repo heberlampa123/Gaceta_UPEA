@@ -139,7 +139,7 @@ Además existen las tablas propias de Laravel: `sessions`, `cache`, `cache_locks
 
 | Regla | Implementación |
 |---|---|
-| Documento único por tipo, número y gestión | `UNIQUE (id_tipo_documental, numero, gestion)` |
+| Documento único por tipo, número y gestión (entre documentos activos) | Índice único parcial `documento_tipo_numero_gestion_activo_unique … WHERE activo` (un borrador anulado libera su número) |
 | Una sola versión vigente por documento | Índice único parcial `version_documento_una_vigente ON (id_documento) WHERE es_vigente` |
 | Número de versión único por documento | `UNIQUE (id_documento, numero_version)` |
 | Observación atendida completa | `CHECK`: `respuesta`, `id_usuario_atiende` y `fecha_atencion` todos nulos o todos con valor |
@@ -165,13 +165,15 @@ con conteo total) en unos 8 ms (antes de los índices de trigramas: unos 90 ms).
 | Aspecto | Implementación |
 |---|---|
 | Contraseñas | Hash bcrypt (columna `contrasena_hash`); nunca se guardan ni se auditan en texto plano. Política: mínimo 8 caracteres con letras y números (`AppServiceProvider`). |
-| Inicio de sesión | Por nombre de usuario o correo. Bloqueo de 15 minutos tras 5 intentos fallidos (`Usuario::MAX_INTENTOS_FALLIDOS`, `MINUTOS_BLOQUEO`). Límite de 10 intentos por minuto por IP. |
+| Inicio de sesión | Por nombre de usuario o correo, sin distinguir mayúsculas. Los nombres inexistentes reciben el mismo tratamiento de bloqueo que las cuentas reales, para no revelar qué cuentas existen. Bloqueo de 15 minutos tras 5 intentos fallidos (`Usuario::MAX_INTENTOS_FALLIDOS`, `MINUTOS_BLOQUEO`). Límite de 10 intentos por minuto por IP. |
 | Contraseña temporal | Middleware `VerificarCuenta`: obliga a cambiarla antes de usar el panel. |
 | Cuentas desactivadas | `VerificarCuenta` cierra la sesión en la siguiente petición; la API responde 403. |
+| Cambio de contraseña | Middleware `auth.session` (AuthenticateSession): al cambiar o restablecer la contraseña se cierran las demás sesiones abiertas de la cuenta; el restablecimiento también revoca los tokens de API. |
 | Autorización | `Gate::before` resuelve cualquier habilidad con forma `modulo.accion` mediante `Usuario::tienePermiso()`. `DocumentoPolicy` añade el estado del documento y la regla de revisor distinto. |
 | CSRF | Activo en formularios y en la API con sesión (Sanctum `statefulApi`). |
 | Archivos | PDF en disco privado (`storage/app/private`); solo se entregan mediante controladores que verifican permiso o publicación. Se valida extensión, tipo MIME y cabecera `%PDF-`. |
-| Cabeceras | `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`; `Strict-Transport-Security` en producción con HTTPS. |
+| Cabeceras | `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Permissions-Policy`, `Content-Security-Policy` (solo scripts propios, sin scripts en línea; en páginas HTML) y `Strict-Transport-Security` en producción con HTTPS. |
+| Doble envío | Los botones se desactivan al enviar; si una acción del flujo ya no corresponde al estado, se muestra un aviso en lugar de un 403 (`Controller::autorizarEnFlujo`). |
 | Límites de uso | Portal: 60 búsquedas y 30 descargas por minuto por IP. |
 | Datos públicos | El portal y la API pública solo exponen documentos publicados y nunca datos internos (rutas, usuarios, estados). |
 | Contenido dinámico | El JavaScript inserta datos con `textContent`, nunca como HTML. |
@@ -194,8 +196,9 @@ Cada transición, dentro de una transacción:
 
 1. Bloquea la fila del documento (`SELECT … FOR UPDATE`).
 2. Verifica que el estado actual sea el de origen; si no, lanza `TransicionNoPermitida`.
-3. Aplica las reglas propias (observaciones obligatorias, respuestas completas, sin observaciones pendientes al aprobar…).
-4. Cambia el estado, registra el seguimiento y la auditoría.
+3. Verifica que el documento esté activo y, al enviar, reenviar o aprobar, que tenga completos los campos obligatorios de su tipo.
+4. Aplica las reglas propias (observaciones obligatorias, respuestas completas, sin observaciones pendientes al aprobar…).
+5. Cambia el estado, registra el seguimiento y la auditoría.
 
 Después de confirmar la transacción emite el evento `DocumentoCambioDeEstado`.
 
@@ -210,6 +213,8 @@ Servicio `App\Services\GestionDocumental`:
 - **Nueva versión**: en una transacción, retira la vigencia de la anterior y crea la nueva con número correlativo; rechaza un archivo idéntico al vigente.
 - **Integridad**: `verificarIntegridad()` recalcula la huella SHA-256 y la compara con la registrada.
 - Si la base de datos falla al registrar, el archivo guardado se elimina.
+- **Anulación**: `anular()` desactiva un borrador registrado por error (`activo = false`), con motivo, seguimiento (`ANULACION`) y auditoría; su número queda disponible.
+- **Validaciones de coherencia** (`GuardarDocumentoRequest::after`): el año de la fecha de emisión debe ser el de la gestión, y el año del número (`…/AAAA`), si lo tiene, también.
 
 ---
 
@@ -309,7 +314,7 @@ php artisan test --filter=FlujoDocumentalTest
 ```
 
 Usan la base `gaceta_upea_test` (configurada en `phpunit.xml`; se crea con `docker/postgres/init/01-crear-bd-pruebas.sh`)
-y nunca la base de desarrollo. **84 pruebas** cubren:
+y nunca la base de desarrollo. **96 pruebas** cubren:
 
 | Archivo | Cubre |
 |---|---|
@@ -322,6 +327,7 @@ y nunca la base de desarrollo. **84 pruebas** cubren:
 | `Portal/PortalPublicoTest` | Visibilidad, filtros, API, límites. |
 | `Panel/NotificacionesAuditoriaTest` | Destinatarios, API de la campana, auditoría y tablero. |
 | `SeguridadYRespaldoTest` | Cabeceras, páginas de error y respaldo. |
+| `CorreccionesRevisionTest` | Regresión de las 10 brechas corregidas en la revisión del 13/11/2026. |
 
 ---
 

@@ -162,6 +162,10 @@ class FlujoDocumental
             $doc = Documento::whereKey($documento->id_documento)->lockForUpdate()->firstOrFail();
             $estadoActual = EstadoDocumento::whereKey($doc->id_estado_actual)->value('codigo');
 
+            if (! $doc->activo) {
+                throw new TransicionNoPermitida('La acción no está permitida: el documento fue anulado.');
+            }
+
             if ($estadoActual !== $desde) {
                 throw new TransicionNoPermitida('La acción no está permitida: el documento está en estado «'
                     .EstadoDocumento::where('codigo', $estadoActual)->value('nombre').'».');
@@ -169,6 +173,17 @@ class FlujoDocumental
 
             if ($revisorDistinto && $doc->id_usuario_registro === $usuario->id_usuario) {
                 throw new TransicionNoPermitida('No puede revisar, aprobar ni publicar un documento que usted registró.');
+            }
+
+            // Un documento no se envía ni se aprueba con campos obligatorios de su tipo sin completar.
+            // (Devolverlo sí está permitido; publicar no se verifica porque ya se aprobó con los datos exigidos
+            // en ese momento y no existe un paso para devolver un documento aprobado.)
+            if (in_array($hacia, [EstadoDocumento::PENDIENTE_REVISION, EstadoDocumento::APROBADO], true)
+                && ($faltantes = $doc->tipoDocumental->camposObligatoriosFaltantes($doc->metadatos)) !== []) {
+                throw new TransicionNoPermitida('Faltan datos obligatorios del tipo «'.$doc->tipoDocumental->nombre.'»: '
+                    .implode(', ', $faltantes).'. '.($hacia === EstadoDocumento::APROBADO
+                        ? 'Devuelva el documento con una observación para que el encargado los complete.'
+                        : 'Complételos con «Editar datos» antes de enviarlo.'));
             }
 
             $vigente = $doc->versionVigente()->first()

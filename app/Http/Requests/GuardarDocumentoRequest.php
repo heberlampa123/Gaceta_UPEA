@@ -37,12 +37,15 @@ class GuardarDocumentoRequest extends FormRequest
         return [
             ...$this->tipoSeleccionado()?->reglasMetadatos() ?? [],
             'metadatos' => ['nullable', 'array'],
-            'id_tipo_documental' => ['required', 'integer', Rule::exists('tipo_documental', 'id_tipo_documental')->where('activo', true)],
+            // Tipo activo, o el tipo que el documento ya tiene aunque se haya desactivado después.
+            'id_tipo_documental' => ['required', 'integer', Rule::exists('tipo_documental', 'id_tipo_documental')
+                ->where(fn ($q) => $q->where('activo', true)->orWhere('id_tipo_documental', $documento?->id_tipo_documental ?? 0))],
             'numero' => [
                 'required', 'string', 'max:30', 'regex:/^[A-Za-z0-9][A-Za-z0-9\-\/\.]*$/',
                 Rule::unique('documento', 'numero')
                     ->where('id_tipo_documental', $this->input('id_tipo_documental'))
                     ->where('gestion', $this->input('gestion'))
+                    ->where('activo', true) // los documentos anulados liberan su número
                     ->ignore($documento?->id_documento, 'id_documento'),
             ],
             'gestion' => ['required', 'integer', 'between:2000,'.(now()->year + 1)],
@@ -55,6 +58,31 @@ class GuardarDocumentoRequest extends FormRequest
                 ? ['prohibited']
                 : ['required', 'file', 'mimes:pdf', 'mimetypes:application/pdf', 'max:'.LimitesArchivo::pdfMaxKb()],
         ];
+    }
+
+    /**
+     * Coherencia entre gestión, fecha de emisión y número (corrección 13/11/2026):
+     *  - el año de la fecha de emisión debe ser el de la gestión;
+     *  - si el número incluye el año ("025/2026"), debe coincidir con la gestión.
+     */
+    public function after(): array
+    {
+        return [function ($validator) {
+            if ($validator->errors()->hasAny(['gestion', 'fecha_emision', 'numero'])) {
+                return;
+            }
+
+            $gestion = (int) $this->input('gestion');
+            $anioFecha = (int) substr((string) $this->input('fecha_emision'), 0, 4);
+
+            if ($anioFecha !== $gestion) {
+                $validator->errors()->add('fecha_emision', "La fecha de emisión ({$anioFecha}) no corresponde a la gestión {$gestion}.");
+            }
+
+            if (preg_match('/[\/\-](\d{4})$/', (string) $this->input('numero'), $m) && (int) $m[1] !== $gestion) {
+                $validator->errors()->add('numero', "El número indica el año {$m[1]}, pero la gestión es {$gestion}.");
+            }
+        }];
     }
 
     public function attributes(): array

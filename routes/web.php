@@ -7,6 +7,7 @@ use App\Http\Controllers\Panel\FlujoDocumentalController;
 use App\Http\Controllers\Panel\InicioController;
 use App\Http\Controllers\Panel\NotificacionController as PanelNotificacionController;
 use App\Http\Controllers\Panel\PerfilController;
+use App\Http\Controllers\Panel\RelacionDocumentalController;
 use App\Http\Controllers\Panel\RevisionController;
 use App\Http\Controllers\Panel\RolController;
 use App\Http\Controllers\Panel\TipoDocumentalController;
@@ -41,10 +42,11 @@ Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')-
 |--------------------------------------------------------------------------
 | Panel administrativo (Figura 2)
 |--------------------------------------------------------------------------
+| "auth.session": cierra las demás sesiones cuando cambia la contraseña (corrección 13/11/2026).
 | "cuenta": cierra sesiones de cuentas desactivadas y obliga a cambiar la contraseña temporal.
 | "can:<permiso>": autorización por código de permiso (ver AppServiceProvider).
 */
-Route::prefix('panel')->name('panel.')->middleware(['auth', 'cuenta'])->group(function () {
+Route::prefix('panel')->name('panel.')->middleware(['auth', 'auth.session', 'cuenta'])->group(function () {
     Route::get('/', InicioController::class)->name('inicio');
 
     // Mi perfil
@@ -72,10 +74,16 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'cuenta'])->group(fu
         // Edición y nuevas versiones: el permiso y el estado del documento se verifican en DocumentoPolicy.
         Route::get('/documentos/{documento}/editar', [DocumentoController::class, 'edit'])->name('documentos.edit');
         Route::put('/documentos/{documento}', [DocumentoController::class, 'update'])->name('documentos.update');
+        Route::post('/documentos/{documento}/anular', [DocumentoController::class, 'anular'])->name('documentos.anular');
 
         Route::post('/documentos/{documento}/versiones', [VersionDocumentoController::class, 'store'])->name('documentos.versiones.store');
         Route::get('/documentos/{documento}/versiones/{version}/archivo', [VersionDocumentoController::class, 'archivo'])->name('documentos.versiones.archivo');
         Route::post('/documentos/{documento}/versiones/{version}/verificar', [VersionDocumentoController::class, 'verificar'])->name('documentos.versiones.verificar');
+
+        // Relaciones entre normas (abroga / deroga / modifica): mismo permiso y estados que «Editar datos».
+        Route::get('/documentos/{documento}/relaciones/candidatos', [RelacionDocumentalController::class, 'candidatos'])->name('documentos.relaciones.candidatos');
+        Route::post('/documentos/{documento}/relaciones', [RelacionDocumentalController::class, 'store'])->name('documentos.relaciones.store');
+        Route::delete('/documentos/{documento}/relaciones/{relacion}', [RelacionDocumentalController::class, 'destroy'])->name('documentos.relaciones.destroy');
 
         // Flujo de revisión y publicación (Fase 5): permiso, estado y revisor distinto en DocumentoPolicy.
         Route::controller(FlujoDocumentalController::class)->prefix('/documentos/{documento}')->name('documentos.')->group(function () {

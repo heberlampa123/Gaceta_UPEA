@@ -4,6 +4,9 @@
 
 @use('App\Support\LimitesArchivo')
 @php($vigente = $documento->versionVigente)
+@php($abrogaciones = $documento->relationLoaded('relacionesRecibidas')
+    ? $documento->relacionesRecibidas->filter(fn ($r) => $r->tipo->quita_vigencia && $r->esEfectiva())
+    : collect())
 
 @section('contenido')
     <nav aria-label="breadcrumb">
@@ -17,12 +20,14 @@
         <div>
             <div class="mb-1">
                 @include('panel.documentos._estado', ['estado' => $documento->estadoActual])
+                @unless ($documento->activo) <span class="badge text-bg-dark">Anulado</span> @endunless
+                @if ($abrogaciones->isNotEmpty()) <span class="badge text-bg-danger">No vigente</span> @endif
                 <span class="badge text-bg-light border">{{ $documento->tipoDocumental->nombre }}</span>
             </div>
             <h1 class="h4 mb-0">{{ $documento->nombreCorto() }}</h1>
             <p class="text-body-secondary mb-0">{{ $documento->titulo }}</p>
         </div>
-        @if ($documento->activo && $documento->estadoActual->es_publico)
+        @if ($documento->activo && $documento->estadoActual->es_publico && $abrogaciones->isEmpty())
             <a href="{{ route('portal.documentos.show', $documento) }}" target="_blank" rel="noopener" class="btn btn-outline-success ms-auto">
                 <i class="bi bi-globe me-1"></i> Ver en el portal
             </a>
@@ -34,12 +39,28 @@
         @endcan
     </div>
 
-    @unless ($documento->esEditable())
+    @if ($abrogaciones->isNotEmpty())
+        <div class="alert alert-danger small">
+            <i class="bi bi-slash-circle me-1"></i>
+            <strong>No vigente:</strong> abrogada por
+            @foreach ($abrogaciones as $r)
+                <a href="{{ route('panel.documentos.show', $r->origen) }}" class="alert-link">{{ $r->origen->nombreCorto() }}</a>@if (! $loop->last), @endif
+            @endforeach.
+            Se conserva en el panel como registro histórico, pero ya no se muestra en el portal público.
+        </div>
+    @endif
+
+    @if (! $documento->activo)
+        <div class="alert alert-dark small">
+            <i class="bi bi-x-octagon me-1"></i>
+            Este borrador fue anulado. Se conserva solo como registro histórico; su número quedó disponible.
+        </div>
+    @elseif (! $documento->esEditable())
         <div class="alert alert-light border small">
             <i class="bi bi-lock me-1"></i>
             En estado «{{ $documento->estadoActual->nombre }}» no se pueden modificar los datos ni cargar nuevas versiones.
         </div>
-    @endunless
+    @endif
 
     <div class="row g-3">
         {{-- Columna principal: PDF vigente y datos --}}
@@ -93,6 +114,9 @@
         {{-- Columna lateral: acciones del flujo, versiones, observaciones e historial --}}
         <div class="col-xl-4">
             @include('panel.documentos._flujo')
+            @if (\App\Models\Documento::relacionesHabilitadas())
+                @include('panel.documentos._relaciones')
+            @endif
             @can('agregarVersion', $documento)
                 <form method="POST" action="{{ route('panel.documentos.versiones.store', $documento) }}" enctype="multipart/form-data" class="card border-0 shadow-sm mb-3">
                     @csrf

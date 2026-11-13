@@ -126,7 +126,20 @@
 - [x] **Manuales** en Markdown (`docs/manuales/`) y en Word (`docs/manuales/word/`): manual de usuario por rol, manual técnico y guía de instalación y despliegue. Herramientas para regenerar los Word en `docs/manuales/herramientas/`.
 - [x] `README.md` propio del sistema.
 - [x] 4 pruebas nuevas (84 en total).
-- [ ] Pruebas con usuarios de la Gaceta (aceptación) — con la base de desarrollo recreada y los datos de demostración.
+- [x] Base de desarrollo recreada con datos de demostración (13/11/2026; respaldo previo en `storage/app/respaldos/`).
+- [x] **Revisión de brechas** (13/11/2026): barrido de 1.740 peticiones sin errores y 18 pruebas exploratorias. **10 brechas corregidas**, con 12 pruebas de regresión (96 en total):
+  1. No se envía ni aprueba un documento sin los campos obligatorios de su tipo.
+  2. Anulación de borradores registrados por error (el número queda disponible).
+  3. Un borrador cuyo tipo se desactivó se puede seguir editando.
+  4. El nombre de usuario no distingue mayúsculas.
+  5. El bloqueo por intentos no revela si una cuenta existe.
+  6. Cambiar o restablecer la contraseña cierra las demás sesiones (`auth.session`).
+  7. Política de seguridad de contenido (CSP).
+  8. El año de la fecha de emisión debe ser el de la gestión.
+  9. El año del número (`…/AAAA`) debe coincidir con la gestión.
+  10. Doble clic: botones desactivados al enviar y aviso amable si el estado ya cambió.
+- [ ] Decisiones pendientes con la Gaceta: (11) ¿solo quien registró edita sus borradores?, (12) ¿el Revisor ve los borradores?, (13) retiro o sustitución de documentos publicados, (14) ¿el Revisor puede corregir una observación antes de que se atienda?
+- [ ] Pruebas con usuarios de la Gaceta (aceptación).
 - [ ] Definir con la unidad responsable el servidor de producción.
 
 ### Fase 9 — Diseño visual definitivo (RNF-04)

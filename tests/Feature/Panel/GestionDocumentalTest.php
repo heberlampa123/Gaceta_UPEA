@@ -107,15 +107,16 @@ class GestionDocumentalTest extends TestCase
 
     public function test_no_se_repite_el_numero_en_la_misma_gestion(): void
     {
-        $this->registrar();
+        // Número sin año, para poder usarlo en dos gestiones distintas.
+        $this->registrar(['numero' => '025']);
 
         $this->actingAs($this->encargado)
-            ->post('/panel/documentos', $this->datos())
+            ->post('/panel/documentos', $this->datos(['numero' => '025']))
             ->assertSessionHasErrors('numero');
 
         // Mismo número en otra gestión: permitido.
         $this->actingAs($this->encargado)
-            ->post('/panel/documentos', $this->datos(['gestion' => 2025, 'fecha_emision' => '2025-05-01']))
+            ->post('/panel/documentos', $this->datos(['numero' => '025', 'gestion' => 2025, 'fecha_emision' => '2025-05-01']))
             ->assertSessionHasNoErrors();
 
         $this->assertSame(2, Documento::count());

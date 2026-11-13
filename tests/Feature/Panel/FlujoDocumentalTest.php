@@ -138,25 +138,39 @@ class FlujoDocumentalTest extends TestCase
     {
         $documento = $this->documento(); // Borrador
 
-        // Desde Borrador no se puede aprobar, publicar, devolver ni reenviar.
-        $this->actingAs($this->revisor)->post($this->url($documento, 'aprobar'))->assertForbidden();
-        $this->actingAs($this->revisor)->post($this->url($documento, 'publicar'))->assertForbidden();
-        $this->actingAs($this->revisor)->post($this->url($documento, 'devolver'), ['observaciones' => ['x']])->assertForbidden();
-        $this->actingAs($this->encargado)->post($this->url($documento, 'reenviar'))->assertForbidden();
+        // Una acción que no corresponde al estado actual se rechaza con un aviso (no se muestra la página 403)
+        // y el estado no cambia. Ej.: desde Borrador no se puede aprobar, publicar, devolver ni reenviar.
+        $rechazada = function (string $accion, Usuario $usuario, array $datos = []) use ($documento) {
+            $this->actingAs($usuario)->post($this->url($documento, $accion), $datos)
+                ->assertRedirect()
+                ->assertSessionHas('error', fn ($mensaje) => str_contains($mensaje, 'ya no está disponible'));
+        };
+
+        $rechazada('aprobar', $this->revisor);
+        $rechazada('publicar', $this->revisor);
+        $rechazada('devolver', $this->revisor, ['observaciones' => ['x']]);
+        $rechazada('reenviar', $this->encargado);
+        $this->assertSame(EstadoDocumento::BORRADOR, $this->estado($documento));
 
         $this->actingAs($this->encargado)->post($this->url($documento, 'enviar-revision'));
 
-        // Pendiente: no se puede publicar directamente ni volver a enviar.
-        $this->actingAs($this->revisor)->post($this->url($documento, 'publicar'))->assertForbidden();
-        $this->actingAs($this->encargado)->post($this->url($documento, 'enviar-revision'))->assertForbidden();
+        // Pendiente: no se puede publicar directamente ni volver a enviar (doble clic).
+        $rechazada('publicar', $this->revisor);
+        $rechazada('enviar-revision', $this->encargado);
+        $this->assertSame(EstadoDocumento::PENDIENTE_REVISION, $this->estado($documento));
 
         $this->actingAs($this->revisor)->post($this->url($documento, 'aprobar'));
         $this->actingAs($this->revisor)->post($this->url($documento, 'publicar'));
 
         // Publicado: ya no admite ninguna acción.
-        foreach (['enviar-revision', 'aprobar', 'publicar', 'reenviar'] as $accion) {
-            $this->actingAs($this->revisor)->post($this->url($documento, $accion))->assertForbidden();
-        }
+        $rechazada('aprobar', $this->revisor);
+        $rechazada('publicar', $this->revisor);
+        $rechazada('enviar-revision', $this->encargado);
+        $rechazada('reenviar', $this->encargado);
+
+        // Sin el permiso correspondiente, sigue siendo 403.
+        $this->actingAs($this->revisor)->post($this->url($documento, 'enviar-revision'))->assertForbidden();
+
         $this->assertSame(EstadoDocumento::PUBLICADO, $this->estado($documento));
     }
 

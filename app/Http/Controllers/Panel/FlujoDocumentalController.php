@@ -22,7 +22,7 @@ class FlujoDocumentalController extends Controller
     /** Encargado: Borrador → Pendiente de revisión. */
     public function enviar(Request $request, Documento $documento): RedirectResponse
     {
-        $this->authorize('enviarARevision', $documento);
+        $this->autorizarEnFlujo('enviarARevision', $documento);
         $datos = $request->validate(['comentario' => self::REGLA_COMENTARIO]);
 
         $this->flujo->enviarARevision($documento, $request->user(), $datos['comentario'] ?? null);
@@ -33,7 +33,7 @@ class FlujoDocumentalController extends Controller
     /** Encargado: atiende las observaciones y reenvía (Observado → Pendiente de revisión). */
     public function reenviar(Request $request, Documento $documento): RedirectResponse
     {
-        $this->authorize('atenderObservaciones', $documento);
+        $this->autorizarEnFlujo('atenderObservaciones', $documento);
         $datos = $request->validate([
             'respuestas' => ['nullable', 'array'],
             'respuestas.*' => ['nullable', 'string', 'max:2000'],
@@ -48,7 +48,7 @@ class FlujoDocumentalController extends Controller
     /** Revisor: Pendiente de revisión → Observado. */
     public function devolver(Request $request, Documento $documento): RedirectResponse
     {
-        $this->authorize('devolver', $documento);
+        $this->autorizarEnFlujo('devolver', $documento);
         $datos = $request->validate([
             'observaciones' => ['required', 'array', 'max:20'],
             'observaciones.*' => ['nullable', 'string', 'max:2000'],
@@ -63,7 +63,7 @@ class FlujoDocumentalController extends Controller
     /** Revisor: Pendiente de revisión → Aprobado para publicación. */
     public function aprobar(Request $request, Documento $documento): RedirectResponse
     {
-        $this->authorize('aprobar', $documento);
+        $this->autorizarEnFlujo('aprobar', $documento);
         $datos = $request->validate(['comentario' => self::REGLA_COMENTARIO]);
 
         $this->flujo->aprobar($documento, $request->user(), $datos['comentario'] ?? null);
@@ -75,7 +75,7 @@ class FlujoDocumentalController extends Controller
     /** Revisor / Publicador: Aprobado → Publicado (visible en el portal). */
     public function publicar(Request $request, Documento $documento): RedirectResponse
     {
-        $this->authorize('publicar', $documento);
+        $this->autorizarEnFlujo('publicar', $documento);
         $datos = $request->validate(['comentario' => self::REGLA_COMENTARIO]);
 
         $this->flujo->publicar($documento, $request->user(), $datos['comentario'] ?? null);

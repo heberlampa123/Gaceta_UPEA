@@ -26,6 +26,13 @@ return [
         'instancia_emisora_predeterminada' => 'Honorable Consejo Universitario',
     ],
 
+    // Relaciones entre normas: una resolución nueva abroga, deroga o modifica otra publicada (13/11/2026).
+    // Con false se ocultan del panel y del portal, y las abrogadas vuelven a mostrarse en el portal
+    // (los datos se conservan). Los tipos de relación se definen en TipoRelacionDocumentalSeeder.
+    'relaciones' => [
+        'habilitado' => (bool) env('GACETA_RELACIONES', true),
+    ],
+
     // Respaldos de la base de datos y de los PDF (Fase 8): php artisan gaceta:respaldo
     'respaldos' => [
         // Carpeta donde se guardan (una subcarpeta por respaldo, con fecha y hora).

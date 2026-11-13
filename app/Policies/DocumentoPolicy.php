@@ -14,6 +14,8 @@ use Illuminate\Auth\Access\Response;
  */
 class DocumentoPolicy
 {
+    public const CODIGO_ESTADO = 'estado';
+
     // ----------------------------------------------------------------- Edición (Fase 3)
 
     public function update(Usuario $usuario, Documento $documento): Response
@@ -24,6 +26,12 @@ class DocumentoPolicy
     public function agregarVersion(Usuario $usuario, Documento $documento): Response
     {
         return $this->editable($usuario, $documento);
+    }
+
+    /** Anular un borrador registrado por error (corrección 13/11/2026). */
+    public function anular(Usuario $usuario, Documento $documento): Response
+    {
+        return $this->verificar($usuario, $documento, 'documento.editar', EstadoDocumento::BORRADOR);
     }
 
     // ----------------------------------------------------------------- Flujo (Fase 5)
@@ -72,8 +80,15 @@ class DocumentoPolicy
             return Response::deny('No tiene permiso para realizar esta acción.');
         }
 
-        if (! $documento->activo || $documento->estadoActual?->codigo !== $estado) {
-            return Response::deny('La acción no está permitida en el estado actual del documento.');
+        // Código "estado": la acción ya no corresponde (por ejemplo, un segundo clic o el estado cambió).
+        // Los controladores del flujo lo muestran como aviso en lugar de una página 403 (corrección 13/11/2026).
+        if (! $documento->activo) {
+            return Response::deny('Esta acción ya no está disponible: el documento fue anulado.', self::CODIGO_ESTADO);
+        }
+
+        if ($documento->estadoActual?->codigo !== $estado) {
+            return Response::deny('Esta acción ya no está disponible: el documento está en estado «'
+                .$documento->estadoActual?->nombre.'».', self::CODIGO_ESTADO);
         }
 
         if ($revisorDistinto && $documento->id_usuario_registro === $usuario->id_usuario) {

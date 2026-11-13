@@ -18,6 +18,25 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class CabecerasSeguridad
 {
+    /**
+     * Content-Security-Policy (corrección 13/11/2026): solo se permiten scripts, estilos, imágenes,
+     * fuentes y conexiones del propio sistema. 'unsafe-inline' en estilos es necesario para los
+     * atributos style de las vistas; los scripts en línea NO están permitidos.
+     */
+    private const POLITICA_CONTENIDO = [
+        "default-src 'self'",
+        "script-src 'self'",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data:",
+        "font-src 'self' data:",
+        "connect-src 'self'",
+        "frame-src 'self'",
+        "frame-ancestors 'self'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+    ];
+
     public function handle(Request $request, Closure $next): Response
     {
         $respuesta = $next($request);
@@ -27,10 +46,25 @@ class CabecerasSeguridad
         $respuesta->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin', false);
         $respuesta->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()', false);
 
+        if ($this->aplicaPoliticaDeContenido($respuesta)) {
+            $respuesta->headers->set('Content-Security-Policy', implode('; ', self::POLITICA_CONTENIDO), false);
+        }
+
         if ($request->isSecure() && app()->isProduction()) {
             $respuesta->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains', false);
         }
 
         return $respuesta;
+    }
+
+    /**
+     * Solo para páginas HTML. No se aplica a los PDF, ni con "npm run dev" (Vite sirve desde otro puerto),
+     * ni a la página de error detallada de Laravel en modo depuración (usa scripts en línea).
+     */
+    private function aplicaPoliticaDeContenido(Response $respuesta): bool
+    {
+        return str_contains((string) $respuesta->headers->get('Content-Type'), 'text/html')
+            && ! file_exists(public_path('hot'))
+            && ! (config('app.debug') && $respuesta->getStatusCode() >= 500);
     }
 }

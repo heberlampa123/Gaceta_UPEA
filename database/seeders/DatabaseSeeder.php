@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             RolesYPermisosSeeder::class,
             EstadoDocumentoSeeder::class,
             TipoDocumentalSeeder::class,
+            TipoRelacionDocumentalSeeder::class,
             AdministradorSeeder::class,
         ]);
     }

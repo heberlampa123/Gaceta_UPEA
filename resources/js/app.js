@@ -7,6 +7,7 @@ import { iniciarCamposAdicionales } from './campos-adicionales';
 import { iniciarFlujoDocumental } from './flujo-documental';
 import { iniciarPortal } from './portal';
 import { iniciarNotificaciones } from './notificaciones';
+import { iniciarRelacionesDocumentales } from './relaciones-documentales';
 
 window.bootstrap = bootstrap;
 
@@ -15,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     iniciarFlujoDocumental();
     iniciarPortal();
     iniciarNotificaciones();
+    iniciarRelacionesDocumentales();
 
     // Confirmación para acciones sensibles: <form data-confirmar="¿Seguro?">
     document.querySelectorAll('form[data-confirmar]').forEach((form) => {
@@ -23,6 +25,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 evento.preventDefault();
             }
         });
+    });
+
+    // Evita el doble envío: al enviar un formulario POST se desactivan sus botones (corrección 13/11/2026).
+    // Se registra en el documento para ejecutarse después de la confirmación; si el usuario la cancela
+    // (o el formulario lo maneja JavaScript), el evento ya viene cancelado y no se desactiva nada.
+    document.addEventListener('submit', (evento) => {
+        const form = evento.target;
+        if (evento.defaultPrevented || form.method.toLowerCase() === 'get') return;
+        setTimeout(() => {
+            form.querySelectorAll('button[type="submit"], button:not([type])').forEach((boton) => {
+                boton.disabled = true;
+            });
+        }, 0);
     });
 
     // Mostrar u ocultar contraseña: <button data-alternar-contrasena="#id">

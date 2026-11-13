@@ -74,7 +74,8 @@
                             </td>
                             <td style="min-width: 260px">{{ \Illuminate\Support\Str::limit($documento->titulo, 110) }}</td>
                             <td class="text-nowrap">{{ $documento->fecha_emision->format('d/m/Y') }}</td>
-                            <td>@include('panel.documentos._estado', ['estado' => $documento->estadoActual])</td>
+                            <td>@include('panel.documentos._estado', ['estado' => $documento->estadoActual])
+                                @if ($documento->abrogado ?? false) <span class="badge text-bg-danger">No vigente</span> @endif</td>
                             <td><small>{{ $documento->usuarioRegistro->nombre_completo }}</small></td>
                             <td class="text-end text-nowrap">
                                 <a href="{{ route('panel.documentos.show', $documento) }}" class="btn btn-sm btn-outline-primary">

@@ -41,6 +41,16 @@ class PortalController extends Controller
         $documento = $this->publicado($documento);
         $documento->load(['tipoDocumental', 'versionVigente']);
 
+        // Relaciones con otras normas, solo las que ya surtieron efecto (ambos documentos publicados).
+        // Las normas que este documento abrogó ya no son visibles: se nombran sin enlace.
+        if (Documento::relacionesHabilitadas()) {
+            $documento->load([
+                'relacionesEmitidas' => fn ($q) => $q->with(['tipo', 'destino.tipoDocumental'])
+                    ->whereHas('destino', fn ($d) => $d->publicados()),
+                'relacionesRecibidas' => fn ($q) => $q->efectivas()->with(['tipo', 'origen.tipoDocumental']),
+            ]);
+        }
+
         return view('portal.documento', ['documento' => $documento]);
     }
 
@@ -63,9 +73,9 @@ class PortalController extends Controller
         );
     }
 
-    /** Un documento no publicado (o desactivado) no existe para el visitante. */
+    /** Un documento no publicado, desactivado o abrogado no existe para el visitante. */
     private function publicado(Documento $documento): Documento
     {
-        return Documento::publicados()->whereKey($documento->id_documento)->with('tipoDocumental')->firstOr(fn () => abort(404));
+        return Documento::visiblesEnPortal()->whereKey($documento->id_documento)->with('tipoDocumental')->firstOr(fn () => abort(404));
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Exceptions\TransicionNoPermitida;
+use App\Models\Auditoria;
 use App\Models\Documento;
 use App\Models\EstadoDocumento;
 use App\Models\SeguimientoDocumento;
@@ -84,6 +86,37 @@ class GestionDocumental
         });
 
         return $documento;
+    }
+
+    /**
+     * Anula un borrador registrado por error (corrección 13/11/2026). No se elimina: queda inactivo,
+     * con su historial, y su número vuelve a estar disponible. Solo se permite en estado Borrador.
+     */
+    public function anular(Documento $documento, string $motivo, Usuario $usuario): Documento
+    {
+        DB::transaction(function () use ($documento, $motivo, $usuario) {
+            $doc = Documento::whereKey($documento->id_documento)->lockForUpdate()->firstOrFail();
+
+            if (! $doc->activo || $doc->estadoActual->codigo !== EstadoDocumento::BORRADOR) {
+                throw new TransicionNoPermitida('Solo se puede anular un documento en estado Borrador.');
+            }
+
+            $doc->forceFill(['activo' => false])->save();
+
+            SeguimientoDocumento::create([
+                'id_documento' => $doc->id_documento,
+                'id_estado_anterior' => $doc->id_estado_actual,
+                'id_estado_nuevo' => $doc->id_estado_actual,
+                'id_version' => $doc->versionVigente()->value('id_version'),
+                'accion' => SeguimientoDocumento::ACCION_ANULACION,
+                'comentario' => mb_substr("Borrador anulado: {$motivo}", 0, 500),
+                'id_usuario' => $usuario->id_usuario,
+            ]);
+
+            Auditor::modificacion($doc, ['motivo' => $motivo], Auditoria::DESACTIVAR);
+        });
+
+        return $documento->refresh();
     }
 
     public function agregarVersion(Documento $documento, UploadedFile $pdf, string $motivo, Usuario $usuario): VersionDocumento

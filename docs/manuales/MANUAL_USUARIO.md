@@ -143,6 +143,8 @@ En el menú de su nombre (esquina superior derecha) encontrará:
 
 Para modificar sus datos (nombre, correo, cargo) o sus roles, comuníquese con el Administrador.
 
+> Al cambiar su contraseña, se cierran automáticamente las sesiones que tuviera abiertas en otros equipos.
+
 ### 3.6 Cerrar sesión
 
 Menú de su nombre → **Cerrar sesión**. Hágalo siempre al terminar, especialmente en equipos compartidos.
@@ -199,7 +201,8 @@ Al ingresar verá:
 3. Presione **Registrar**. El documento queda en estado **Borrador**.
 
 > No pueden existir dos documentos del mismo tipo con el mismo número en la misma gestión.
-> El sistema verifica que el archivo sea realmente un PDF.
+> El año de la **fecha de emisión** debe ser el de la **gestión**, y si el número incluye el año (por ejemplo `025/2026`),
+> también debe coincidir con la gestión. El sistema verifica que el archivo sea realmente un PDF.
 
 ### 5.2 Consultar documentos
 
@@ -230,7 +233,8 @@ No se acepta un archivo idéntico al vigente.
 
 ### 5.5 Enviar a revisión
 
-1. Revise los datos y el PDF.
+1. Revise los datos y el PDF. Si el tipo documental tiene **campos obligatorios**, deben estar completos: de lo contrario,
+   el sistema indicará cuáles faltan.
 2. En la ficha, sección **Enviar a revisión**, escriba un comentario para el revisor (opcional).
 3. Presione **Enviar a revisión** y confirme.
 
@@ -247,6 +251,16 @@ Cuando un documento es **observado**, recibirá el aviso «Su documento fue obse
 5. Presione **Reenviar a revisión**.
 
 El documento vuelve a **Pendiente de revisión** y los Revisores reciben el aviso «Documento corregido por revisar».
+
+### 5.7 Anular un borrador registrado por error
+
+Si registró un documento por error (por ejemplo, con un número equivocado o duplicado) y todavía está en **Borrador**:
+
+1. En la ficha, abra **Anular este borrador**.
+2. Escriba el **motivo** y presione **Anular borrador**; confirme.
+
+El documento no se elimina: queda como registro histórico (con su seguimiento) y deja de aparecer en el listado.
+Su **número queda disponible** para registrar el documento correcto. Solo se pueden anular borradores.
 
 ---
 
@@ -272,7 +286,7 @@ Los documentos más antiguos aparecen primero.
 Presione **Revisar**. En la ficha verá el PDF vigente, los datos, las versiones y el historial.
 Según lo que encuentre:
 
-**Si está correcto → Aprobar**
+**Si está correcto → Aprobar** (no se puede aprobar si faltan campos obligatorios del tipo documental; en ese caso, devuélvalo con una observación)
 
 1. En **Revisión**, escriba un comentario (opcional).
 2. Presione **Aprobar para publicación** y confirme. El documento pasa a **Aprobado**.
@@ -416,7 +430,10 @@ Si ambas huellas coinciden, el archivo es idéntico al publicado.
 | «Su cuenta está desactivada» | Comuníquese con el Administrador. |
 | No veo una opción del menú | Su rol no tiene ese permiso. Consulte al Administrador. |
 | No puedo editar un documento | Solo se edita en Borrador u Observado. En otros estados está bloqueado. |
-| No puedo aprobar un documento | Si usted lo registró, debe aprobarlo otro Revisor. |
+| No puedo aprobar un documento | Si usted lo registró, debe aprobarlo otro Revisor. Si faltan campos obligatorios, devuélvalo con una observación. |
+| «Esta acción ya no está disponible…» | El documento cambió de estado (por ejemplo, presionó dos veces el botón u otro usuario ya actuó). Revise su estado actual en la ficha. |
+| Registré un documento por error | Si está en Borrador, anúlelo (sección 5.7); su número quedará disponible. |
+| «La fecha de emisión no corresponde a la gestión» | El año de la fecha debe ser el de la gestión. Corrija uno de los dos. |
 | «El archivo supera el tamaño máximo» | El PDF debe pesar como máximo 20 MB. Reduzca su tamaño (por ejemplo, escaneando a menor resolución). |
 | «El archivo no es un PDF válido» | El archivo no es un PDF real (por ejemplo, una imagen o un Word renombrado). Expórtelo nuevamente como PDF. |
 | «La sesión expiró» (error 419) | La página estuvo abierta mucho tiempo. Vuelva atrás, recargue la página e intente de nuevo. |

@@ -117,6 +117,23 @@ class TipoDocumental extends Model
         return $resultado;
     }
 
+    /**
+     * Etiquetas de los campos obligatorios que no tienen valor en los metadatos de un documento.
+     * Sirve para impedir que avance en el flujo un documento con datos incompletos
+     * (por ejemplo, si el campo se agregó al tipo después de registrar el documento).
+     *
+     * @return string[]
+     */
+    public function camposObligatoriosFaltantes(?array $metadatos): array
+    {
+        return collect($this->campos())
+            ->filter(fn ($campo) => ($campo['obligatorio'] ?? false) && $campo['tipo'] !== 'si_no')
+            ->filter(fn ($campo) => ($metadatos[$campo['nombre']] ?? null) === null || ($metadatos[$campo['nombre']] ?? '') === '')
+            ->pluck('etiqueta')
+            ->values()
+            ->all();
+    }
+
     /** Valor de un metadato listo para mostrarse en pantalla. */
     public static function formatearValor(array $campo, mixed $valor): string
     {

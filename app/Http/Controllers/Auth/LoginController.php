@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Auditoria;
 use App\Models\Usuario;
 use App\Support\Auditor;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -42,25 +45,35 @@ class LoginController extends Controller
         ]);
 
         $ingresado = trim($datos['usuario']);
+        $normalizado = mb_strtolower($ingresado);
 
+        // Nombre de usuario y correo sin distinguir mayúsculas (corrección 13/11/2026).
         $usuario = Usuario::query()
-            ->where('nombre_usuario', $ingresado)
-            ->orWhereRaw('lower(correo) = ?', [mb_strtolower($ingresado)])
+            ->whereRaw('lower(nombre_usuario) = ?', [$normalizado])
+            ->orWhereRaw('lower(correo) = ?', [$normalizado])
             ->first();
 
-        if ($usuario?->estaBloqueado()) {
+        // Bloqueo: a un usuario inexistente se le aplica el mismo comportamiento que a una cuenta real,
+        // para que el mensaje no revele qué cuentas existen (corrección 13/11/2026).
+        $bloqueadoHasta = $usuario
+            ? ($usuario->estaBloqueado() ? $usuario->bloqueado_hasta : null)
+            : $this->bloqueoSimulado($normalizado);
+
+        if ($bloqueadoHasta) {
             $this->registrarFallo($ingresado, $usuario, 'cuenta_bloqueada');
 
-            throw ValidationException::withMessages([
-                'usuario' => $this->mensajeBloqueo($usuario),
-            ]);
+            throw ValidationException::withMessages(['usuario' => $this->mensajeBloqueo($bloqueadoHasta)]);
         }
 
         if (! $usuario || ! Hash::check($datos['contrasena'], $usuario->contrasena_hash)) {
             $this->registrarFallo($ingresado, $usuario, 'credenciales_incorrectas');
 
-            if ($usuario && $this->sumarIntentoFallido($usuario)) {
-                throw ValidationException::withMessages(['usuario' => $this->mensajeBloqueo($usuario)]);
+            $bloqueadoHasta = $usuario
+                ? ($this->sumarIntentoFallido($usuario) ? $usuario->bloqueado_hasta : null)
+                : $this->sumarIntentoSimulado($normalizado);
+
+            if ($bloqueadoHasta) {
+                throw ValidationException::withMessages(['usuario' => $this->mensajeBloqueo($bloqueadoHasta)]);
             }
 
             throw ValidationException::withMessages(['usuario' => self::MENSAJE_CREDENCIALES]);
@@ -136,11 +149,43 @@ class LoginController extends Controller
         );
     }
 
-    private function mensajeBloqueo(Usuario $usuario): string
+    private function mensajeBloqueo(CarbonInterface $hasta): string
     {
         return sprintf(
             'La cuenta está bloqueada temporalmente por varios intentos fallidos. Intente nuevamente a las %s o solicite el desbloqueo al administrador.',
-            $usuario->bloqueado_hasta->format('H:i'),
+            $hasta->format('H:i'),
         );
+    }
+
+    // ----------------------------------------------------------------- Bloqueo simulado (usuarios inexistentes)
+
+    private function claveSimulada(string $normalizado): string
+    {
+        return 'login:inexistente:'.sha1($normalizado);
+    }
+
+    private function bloqueoSimulado(string $normalizado): ?CarbonInterface
+    {
+        $hasta = Cache::get($this->claveSimulada($normalizado))['hasta'] ?? null;
+
+        return $hasta && $hasta > now()->getTimestamp() ? Carbon::createFromTimestamp($hasta, config('app.timezone')) : null;
+    }
+
+    /** Cuenta los intentos fallidos de un nombre inexistente igual que en una cuenta real. */
+    private function sumarIntentoSimulado(string $normalizado): ?CarbonInterface
+    {
+        $clave = $this->claveSimulada($normalizado);
+        $intentos = (Cache::get($clave)['intentos'] ?? 0) + 1;
+
+        if ($intentos >= Usuario::MAX_INTENTOS_FALLIDOS) {
+            $hasta = now()->addMinutes(Usuario::MINUTOS_BLOQUEO);
+            Cache::put($clave, ['intentos' => 0, 'hasta' => $hasta->getTimestamp()], now()->addDay());
+
+            return $hasta;
+        }
+
+        Cache::put($clave, ['intentos' => $intentos, 'hasta' => null], now()->addDay());
+
+        return null;
     }
 }

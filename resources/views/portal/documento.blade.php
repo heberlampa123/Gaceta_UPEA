@@ -54,6 +54,10 @@
                 </dl>
             </div>
 
+            @if (\App\Models\Documento::relacionesHabilitadas())
+                @include('portal._relaciones')
+            @endif
+
             @if ($documento->versionVigente)
                 <div class="card border-0 shadow-sm">
                     <div class="card-body small">

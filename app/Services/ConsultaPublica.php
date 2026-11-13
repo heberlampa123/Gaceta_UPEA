@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
  * Búsqueda de documentos en el portal público (RF-06, Ref. 28–30).
  * La usan la página del portal (primera carga) y la API JSON (filtros con Axios),
  * para que ambas muestren exactamente los mismos resultados.
- * Solo devuelve documentos publicados y activos.
+ * Solo devuelve documentos publicados, activos y vigentes (las normas abrogadas no se muestran).
  */
 class ConsultaPublica
 {
@@ -60,7 +60,7 @@ class ConsultaPublica
     public function buscar(array $filtros, int $pagina = 1): LengthAwarePaginator
     {
         return Documento::query()
-            ->publicados()
+            ->visiblesEnPortal()
             ->with('tipoDocumental')
             ->when($filtros['q'] ?? null, fn (Builder $q, string $texto) => $q->where(fn (Builder $w) => $w
                 ->buscar($texto)
@@ -82,7 +82,7 @@ class ConsultaPublica
     /** Opciones de los filtros, calculadas solo sobre documentos publicados. */
     public function opciones(): array
     {
-        $publicados = fn () => Documento::query()->publicados();
+        $publicados = fn () => Documento::query()->visiblesEnPortal();
 
         return [
             'tipos' => TipoDocumental::whereIn('id_tipo_documental', $publicados()->select('id_tipo_documental'))->orderBy('nombre')->get(['id_tipo_documental', 'nombre']),
@@ -106,12 +106,12 @@ class ConsultaPublica
 
     public function totalPublicados(): int
     {
-        return Documento::query()->publicados()->count();
+        return Documento::query()->visiblesEnPortal()->count();
     }
 
     /** @return Collection<int, Documento> */
     public function ultimosPublicados(int $cantidad = 5): Collection
     {
-        return Documento::query()->publicados()->with('tipoDocumental')->latest('fecha_publicacion')->limit($cantidad)->get();
+        return Documento::query()->visiblesEnPortal()->with('tipoDocumental')->latest('fecha_publicacion')->limit($cantidad)->get();
     }
 }

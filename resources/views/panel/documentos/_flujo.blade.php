@@ -23,6 +23,22 @@
     </form>
 @endcan
 
+{{-- Anular un borrador registrado por error (corrección 13/11/2026) --}}
+@can('anular', $documento)
+    <details class="card border-0 shadow-sm mb-3">
+        <summary class="card-body py-2 small text-danger" style="cursor: pointer"><i class="bi bi-x-octagon me-1"></i> Anular este borrador</summary>
+        <form method="POST" action="{{ route('panel.documentos.anular', $documento) }}" class="card-body pt-0"
+              data-confirmar="El borrador quedará anulado (no se elimina; su número quedará disponible). ¿Continuar?">
+            @csrf
+            <p class="small text-body-secondary mb-2">Use esta opción si el documento se registró por error (por ejemplo, número equivocado o duplicado).</p>
+            <input type="text" name="motivo" maxlength="300" required minlength="5" placeholder="Motivo de la anulación" aria-label="Motivo de la anulación"
+                   @class(['form-control', 'form-control-sm', 'mb-2', 'is-invalid' => $errors->has('motivo')])>
+            @error('motivo') <div class="invalid-feedback mb-2">{{ $message }}</div> @enderror
+            <button type="submit" class="btn btn-sm btn-outline-danger w-100">Anular borrador</button>
+        </form>
+    </details>
+@endcan
+
 {{-- Observado → Pendiente de revisión (atender observaciones) --}}
 @can('atenderObservaciones', $documento)
     <form method="POST" action="{{ route('panel.documentos.reenviar', $documento) }}" class="card border-0 shadow-sm mb-3 border-start border-4 border-danger">

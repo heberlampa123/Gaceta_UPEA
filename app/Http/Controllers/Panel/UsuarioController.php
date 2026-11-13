@@ -178,6 +178,9 @@ class UsuarioController extends Controller
             'intentos_fallidos' => 0,
         ])->save();
 
+        // Las sesiones abiertas del usuario se cierran solas (middleware auth.session); también sus tokens de API.
+        $usuario->tokens()->delete();
+
         Auditor::registrar(Auditoria::RESTABLECER_CONTRASENA, 'Usuario', $usuario->id_usuario);
 
         return back()

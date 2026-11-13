@@ -21,6 +21,8 @@ class Auditoria extends Model
 
     public const MODIFICAR = 'MODIFICAR';
 
+    public const ELIMINAR = 'ELIMINAR';
+
     public const DESACTIVAR = 'DESACTIVAR';
 
     public const ACTIVAR = 'ACTIVAR';
@@ -75,6 +77,7 @@ class Auditoria extends Model
         self::CIERRE_SESION => 'Cierre de sesión',
         self::CREAR => 'Creación',
         self::MODIFICAR => 'Modificación',
+        self::ELIMINAR => 'Eliminación',
         self::DESACTIVAR => 'Desactivación',
         self::ACTIVAR => 'Activación',
         self::ENVIAR_REVISION => 'Envío a revisión',
