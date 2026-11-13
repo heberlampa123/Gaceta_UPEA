@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'cuenta' => VerificarCuenta::class,
         ]);
 
+        // Sanctum: las rutas de /api reconocen la sesión del panel (para las llamadas con Axios),
+        // con protección CSRF, cuando la petición viene de un dominio configurado (config/sanctum.php).
+        $middleware->statefulApi();
+
         // Visitantes sin sesión que intentan entrar al panel → inicio de sesión.
         // Usuarios con sesión que abren /login → panel.
         $middleware->redirectGuestsTo(fn () => route('login'));

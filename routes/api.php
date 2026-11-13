@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\DocumentoPublicoController;
+use App\Http\Controllers\Api\NotificacionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,7 +16,12 @@ Route::get('/documentos', [DocumentoPublicoController::class, 'index'])
     ->middleware('throttle:portal')
     ->name('api.documentos.index');
 
-// Protegida con Sanctum (sesión del panel o token).
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Protegidas con Sanctum (sesión del panel o token). "cuenta": rechaza cuentas desactivadas.
+Route::middleware(['auth:sanctum', 'cuenta'])->group(function () {
+    Route::get('/user', fn (Request $request) => $request->user());
+
+    // Notificaciones del usuario (campana del panel con Axios, Fase 7).
+    Route::get('/notificaciones/resumen', [NotificacionController::class, 'resumen'])->name('api.notificaciones.resumen');
+    Route::patch('/notificaciones/{notificacion}/leer', [NotificacionController::class, 'leer'])->name('api.notificaciones.leer');
+    Route::post('/notificaciones/leer-todas', [NotificacionController::class, 'leerTodas'])->name('api.notificaciones.leer-todas');
+});

@@ -22,6 +22,10 @@ class VerificarCuenta
         $usuario = $request->user();
 
         if ($usuario && ! $usuario->activo) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Su cuenta fue desactivada.'], 403);
+            }
+
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -32,6 +36,10 @@ class VerificarCuenta
         }
 
         if ($usuario?->debe_cambiar_contrasena && ! $request->routeIs(...self::RUTAS_PERMITIDAS)) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Debe cambiar su contraseña antes de continuar.'], 403);
+            }
+
             return redirect()->route('panel.perfil.contrasena')
                 ->with('aviso', 'Por seguridad, debe cambiar su contraseña antes de continuar.');
         }

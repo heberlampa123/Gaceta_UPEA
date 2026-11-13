@@ -137,6 +137,24 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 
 ---
 
+## Fase 7 — Notificaciones, auditoría y tablero
+
+| Función | Detalle | Archivo(s) |
+|---|---|---|
+| **Quién recibe cada aviso** | Pendiente → revisores activos (excepto el registrador); Observado / Aprobado / Publicado → quien registró. Nunca a quien actuó. | `app/Listeners/NotificarCambioDeEstado.php` (`handle` :25; Pendiente :32, Observado :38, Aprobado :44, Publicado :50) |
+| **Textos de los avisos** | Título y mensaje de cada tipo de notificación. | `NotificarCambioDeEstado.php` (dentro de cada caso del `match`) |
+| **Usuarios con un permiso** | Consulta usada para elegir destinatarios. | `app/Models/Usuario.php:134` (`scopeConPermiso`) |
+| **Íconos por tipo** | Ícono de cada aviso en la campana. | `app/Models/Notificacion.php:61` (`icono`) |
+| **Campana (Axios)** | Contador y avisos recientes; se actualiza cada minuto y al volver a la pestaña. | **Vista:** `resources/views/layouts/panel.blade.php` (bloque «Campana de notificaciones»)<br>**Cada aviso:** `resources/views/panel/notificaciones/_item.blade.php`<br>**JavaScript:** `resources/js/notificaciones.js` (intervalo :11, actualización :47) |
+| **API de notificaciones (Sanctum)** | Resumen, marcar una y marcar todas como leídas. | **Controlador:** `app/Http/Controllers/Api/NotificacionController.php` (cantidad de recientes :18, resumen :21, leer :34, leer todas :44)<br>**Rutas:** `routes/api.php`<br>**Sesión del panel en la API:** `bootstrap/app.php:25` (`statefulApi`) y `APP_URL` en `.env` |
+| **Página de notificaciones** | Todas / sin leer; abrir marca como leída y lleva al documento. | **Controlador:** `app/Http/Controllers/Panel/NotificacionController.php` (lista :14, abrir :34, leer todas :45)<br>**Vista:** `resources/views/panel/notificaciones/index.blade.php` |
+| **Consulta de auditoría** | Filtros por usuario, acción, entidad, ID y fechas; detalle desplegable. | **Controlador:** `app/Http/Controllers/Panel/AuditoriaController.php:19`<br>**Vista:** `resources/views/panel/auditoria/index.blade.php` |
+| **Exportar auditoría** | CSV con separador «;» y tildes compatibles con Excel. | `AuditoriaController.php:34` (`exportar`) |
+| **Tablero de inicio** | Pendientes según el rol, documentos por estado, notificaciones, recientes y actividad. | **Controlador:** `app/Http/Controllers/Panel/InicioController.php:19`<br>**Vista:** `resources/views/panel/inicio.blade.php` |
+| **Pruebas** | Destinatarios, API de la campana, marcar como leídas, auditoría, CSV y tablero. | `tests/Feature/Panel/NotificacionesAuditoriaTest.php` |
+
+---
+
 ## Cambios frecuentes
 
 | Si se solicita… | Cambiar esto |
@@ -160,6 +178,11 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 | Cambiar los límites de búsquedas o descargas | `AppServiceProvider.php:32` y `:33` |
 | Mostrar u ocultar un dato en los resultados del portal | `DocumentoPublicoResource.php` + `portal/_resultado.blade.php` (atributo `data-campo`) |
 | Cambiar el tiempo de espera al escribir en el buscador | `resources/js/portal.js:12` |
+| Notificar a otras personas en un paso del flujo | `NotificarCambioDeEstado.php` (lista de destinatarios del caso correspondiente) |
+| Cambiar cada cuánto se actualiza la campana | `resources/js/notificaciones.js:11` (`INTERVALO_MS`) |
+| Mostrar más avisos en la campana | `Api/NotificacionController.php:18` (`RECIENTES`) |
+| Agregar un pendiente al tablero | `InicioController.php` (agregar un `$pendientes->push([...])`) |
+| Acceder por otra dirección (IP de la red) y que funcione la campana | `.env` → `SANCTUM_STATEFUL_DOMAINS` (agregar la dirección con su puerto) |
 | Cambiar los datos del administrador inicial | `.env` (`ADMIN_USUARIO`, `ADMIN_CORREO`, `ADMIN_CONTRASENA`) |
 
 ---

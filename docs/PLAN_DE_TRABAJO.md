@@ -107,14 +107,15 @@
 - [x] Botón «Ver en el portal» en la ficha del panel para documentos publicados.
 - [x] 7 pruebas nuevas (72 en total).
 
-### Fase 7 — Notificaciones, auditoría y tablero (RF-08, RF-09)
-- [ ] Notificaciones: `NUEVO_PENDIENTE` → usuarios con permiso de revisar; `OBSERVADO` y `APROBADO` → encargado que registró; `PUBLICADO` → encargado (y revisores).
-- [ ] Campana con contador de no leídas (API + Sanctum, consulta periódica con **Axios**), marcar como leída.
-- [ ] Auditoría automática (observers/eventos): inicio de sesión (exitoso y fallido), crear, modificar, desactivar, cambios de permisos, publicar; con valores anteriores y nuevos en `detalle` y la IP.
-- [ ] Consulta de auditoría con filtros (usuario, acción, entidad, fechas).
-- [ ] Tablero de inicio: conteos por estado, pendientes del usuario, actividad reciente.
-
-**Entregable:** cada acción relevante queda registrada y los usuarios reciben sus avisos.
+### Fase 7 — Notificaciones, auditoría y tablero (RF-08, RF-09) ✅ COMPLETADA (12/11/2026)
+- [x] Notificaciones automáticas en cada paso del flujo (oyente del evento `DocumentoCambioDeEstado`): `NUEVO_PENDIENTE` → revisores activos (excepto el registrador); `OBSERVADO`, `APROBADO` y `PUBLICADO` → quien registró el documento. Nunca se notifica a quien realizó la acción.
+- [x] Campana en la barra superior con contador y avisos recientes, actualizada con **Axios** cada minuto y al volver a la pestaña; «Marcar todas como leídas»; al abrir un aviso se marca como leído y lleva al documento.
+- [x] API de notificaciones protegida con **Sanctum** (sesión del panel, `statefulApi`): `GET /api/notificaciones/resumen`, `PATCH /api/notificaciones/{id}/leer`, `POST /api/notificaciones/leer-todas`. Cada usuario solo ve las suyas.
+- [x] Página «Notificaciones» (todas / sin leer) con contador en el menú.
+- [x] Consulta de auditoría (permiso `auditoria.ver`) con filtros por usuario, acción, entidad, ID y fechas; detalle con valores anteriores y nuevos; exportación a CSV (Excel).
+- [x] Tablero de inicio: pendientes según el rol (por revisar, por publicar, observados, borradores, cuentas bloqueadas), documentos por estado, notificaciones sin leer, documentos recientes y actividad propia.
+- [x] `APP_URL=http://localhost:8000` (necesario para que Sanctum reconozca la sesión en `localhost:8000`).
+- [x] 8 pruebas nuevas (80 en total).
 
 ### Fase 8 — Pruebas, ajustes y documentación
 - [ ] Pruebas automatizadas (Pest/PHPUnit): transiciones válidas e inválidas, permisos por rol, versión vigente única, visibilidad pública, unicidad del documento.

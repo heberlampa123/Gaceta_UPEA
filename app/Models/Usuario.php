@@ -130,6 +130,14 @@ class Usuario extends Authenticatable
         return $query->where('activo', true);
     }
 
+    /** Usuarios activos que tienen un permiso a través de alguno de sus roles activos. */
+    public function scopeConPermiso(Builder $query, string $codigo): Builder
+    {
+        return $query->activos()->whereHas('roles', fn (Builder $r) => $r
+            ->where('rol.activo', true)
+            ->whereHas('permisos', fn (Builder $p) => $p->where('codigo', $codigo)));
+    }
+
     protected function nombreCompleto(): Attribute
     {
         return Attribute::get(fn () => trim("{$this->nombres} {$this->apellidos}"));

@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Panel\AuditoriaController;
 use App\Http\Controllers\Panel\DocumentoController;
 use App\Http\Controllers\Panel\FlujoDocumentalController;
 use App\Http\Controllers\Panel\InicioController;
+use App\Http\Controllers\Panel\NotificacionController as PanelNotificacionController;
 use App\Http\Controllers\Panel\PerfilController;
 use App\Http\Controllers\Panel\RevisionController;
 use App\Http\Controllers\Panel\RolController;
@@ -49,6 +51,17 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'cuenta'])->group(fu
     Route::get('/perfil', [PerfilController::class, 'show'])->name('perfil');
     Route::get('/perfil/contrasena', [PerfilController::class, 'editarContrasena'])->name('perfil.contrasena');
     Route::put('/perfil/contrasena', [PerfilController::class, 'actualizarContrasena'])->name('perfil.contrasena.actualizar');
+
+    // Notificaciones (Fase 7)
+    Route::get('/notificaciones', [PanelNotificacionController::class, 'index'])->name('notificaciones.index');
+    Route::get('/notificaciones/{notificacion}/abrir', [PanelNotificacionController::class, 'abrir'])->name('notificaciones.abrir');
+    Route::post('/notificaciones/leer-todas', [PanelNotificacionController::class, 'leerTodas'])->name('notificaciones.leer-todas');
+
+    // Auditoría (Fase 7)
+    Route::middleware('can:auditoria.ver')->group(function () {
+        Route::get('/auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
+        Route::get('/auditoria/exportar', [AuditoriaController::class, 'exportar'])->name('auditoria.exportar');
+    });
 
     // Gestión documental (Fase 3)
     Route::middleware('can:documento.ver')->group(function () {

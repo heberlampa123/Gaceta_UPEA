@@ -259,11 +259,14 @@ class FlujoDocumentalTest extends TestCase
         $this->actingAs($this->revisor)->post($this->url($aprobado, 'aprobar'));
         $this->flushSession();
 
+        // Se comparan los enlaces de la bandeja (la campana de notificaciones también menciona números).
+        $enlace = fn (Documento $d) => route('panel.documentos.show', $d).'"';
+
         $this->actingAs($this->revisor)->get('/panel/revision')
-            ->assertOk()->assertSee($pendiente->numero)->assertDontSee($aprobado->numero)->assertDontSee($borrador->numero);
+            ->assertOk()->assertSee($enlace($pendiente), false)->assertDontSee($enlace($aprobado), false)->assertDontSee($enlace($borrador), false);
 
         $this->actingAs($this->revisor)->get('/panel/revision?bandeja=aprobados')
-            ->assertSee($aprobado->numero)->assertDontSee($pendiente->numero);
+            ->assertSee($enlace($aprobado), false)->assertDontSee($enlace($pendiente), false);
     }
 
     public function test_el_seeder_de_demostracion_recorre_el_flujo_real(): void

@@ -1,5 +1,8 @@
 @extends('layouts.base')
 
+@use('App\Http\Controllers\Api\NotificacionController')
+@use('App\Http\Resources\NotificacionResource')
+
 @php
     /*
      * Menú del panel administrativo (Figura 2 del análisis).
@@ -15,14 +18,20 @@
         ['seccion' => 'Administración'],
         ['texto' => 'Usuarios', 'icono' => 'people', 'permiso' => 'usuario.gestionar', 'ruta' => 'panel.usuarios.index', 'activa' => 'panel.usuarios.*'],
         ['texto' => 'Roles y permisos', 'icono' => 'shield-lock', 'permiso' => 'rol.gestionar', 'ruta' => 'panel.roles.index', 'activa' => 'panel.roles.*'],
-        ['texto' => 'Auditoría', 'icono' => 'journal-text', 'permiso' => 'auditoria.ver', 'fase' => 7],
+        ['texto' => 'Auditoría', 'icono' => 'journal-text', 'permiso' => 'auditoria.ver', 'ruta' => 'panel.auditoria.index', 'activa' => 'panel.auditoria.*'],
         ['seccion' => 'Mi cuenta'],
-        ['texto' => 'Notificaciones', 'icono' => 'bell', 'fase' => 7],
+        ['texto' => 'Notificaciones', 'icono' => 'bell', 'ruta' => 'panel.notificaciones.index', 'activa' => 'panel.notificaciones.*', 'contador' => 'notificaciones'],
         ['texto' => 'Mi perfil', 'icono' => 'person-circle', 'ruta' => 'panel.perfil', 'activa' => 'panel.perfil*'],
     ];
 
     $usuarioActual = auth()->user();
     $visibles = array_filter($menu, fn ($item) => ! isset($item['permiso']) || $usuarioActual->can($item['permiso']));
+
+    // Campana de notificaciones (Fase 7): valores iniciales; resources/js/notificaciones.js los actualiza con Axios.
+    $noLeidas = $usuarioActual->notificaciones()->noLeidas()->count();
+    $notificacionesRecientes = NotificacionResource::collection(
+        $usuarioActual->notificaciones()->latest('fecha_creacion')->latest('id_notificacion')->limit(NotificacionController::RECIENTES)->get()
+    )->resolve(request());
 @endphp
 
 @section('cuerpo')
@@ -50,6 +59,9 @@
                                @class(['nav-link', 'active' => request()->routeIs($item['activa'])])
                                @if (request()->routeIs($item['activa'])) aria-current="page" @endif>
                                 <i class="bi bi-{{ $item['icono'] }}"></i> {{ $item['texto'] }}
+                                @if (($item['contador'] ?? null) === 'notificaciones')
+                                    <span class="badge rounded-pill text-bg-danger ms-auto" data-contador-menu @if (! $noLeidas) hidden @endif>{{ $noLeidas }}</span>
+                                @endif
                             </a>
                         </li>
                     @else
@@ -74,7 +86,34 @@
 
             <span class="navbar-text fw-semibold text-gaceta d-none d-sm-inline">@yield('titulo', 'Panel')</span>
 
-            <div class="dropdown ms-auto">
+            {{-- Campana de notificaciones (se actualiza con Axios cada minuto) --}}
+            <div class="dropdown ms-auto me-2" data-notificaciones
+                 data-api="{{ route('api.notificaciones.resumen') }}" data-leer-todas="{{ route('api.notificaciones.leer-todas') }}">
+                <button class="btn btn-light position-relative" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                        aria-expanded="false" aria-label="Notificaciones" data-campana>
+                    <i class="bi bi-bell fs-5"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-danger" data-contador
+                          @if (! $noLeidas) hidden @endif>{{ $noLeidas }}</span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end p-0 shadow" style="width: min(22rem, 92vw)">
+                    <div class="d-flex align-items-center px-3 py-2 border-bottom">
+                        <strong>Notificaciones</strong>
+                        <button type="button" class="btn btn-link btn-sm ms-auto p-0 text-decoration-none" data-leer-todas-boton>Marcar todas como leídas</button>
+                    </div>
+                    <div class="list-group list-group-flush" data-lista style="max-height: 360px; overflow-y: auto">
+                        @foreach ($notificacionesRecientes as $n)
+                            @include('panel.notificaciones._item', ['n' => $n])
+                        @endforeach
+                    </div>
+                    <p class="text-center text-body-secondary small py-3 mb-0" data-vacio @if (count($notificacionesRecientes)) hidden @endif>No tiene notificaciones.</p>
+                    <a href="{{ route('panel.notificaciones.index') }}" class="d-block text-center py-2 border-top small text-decoration-none">Ver todas</a>
+                </div>
+                <template data-plantilla>
+                    @include('panel.notificaciones._item', ['n' => []])
+                </template>
+            </div>
+
+            <div class="dropdown">
                 <button class="btn btn-light dropdown-toggle d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-person-circle fs-5"></i>
                     <span class="text-start lh-sm d-none d-md-block">

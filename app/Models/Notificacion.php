@@ -57,6 +57,18 @@ class Notificacion extends Model
         return $query->whereNull('fecha_lectura');
     }
 
+    /** Ícono de Bootstrap Icons según el tipo de aviso. */
+    public function icono(): string
+    {
+        return match ($this->tipo) {
+            self::NUEVO_PENDIENTE => 'inbox',
+            self::OBSERVADO => 'exclamation-circle',
+            self::APROBADO => 'check2-circle',
+            self::PUBLICADO => 'globe',
+            default => 'bell',
+        };
+    }
+
     public function marcarComoLeida(): void
     {
         if ($this->fecha_lectura === null) {
