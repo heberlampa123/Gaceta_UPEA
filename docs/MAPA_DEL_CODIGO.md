@@ -15,7 +15,7 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 | **Configuración general** | Conexión, idioma, contraseñas locales (no se sube a Git). | `.env` (plantilla para otros equipos: `.env.example`) |
 | **Zona horaria** | `America/La_Paz`. | `config/app.php` (clave `timezone`) |
 | **Configuración propia del sistema** | Datos del administrador inicial. | `config/gaceta.php` |
-| **Estilos y scripts** | Bootstrap 5, Bootstrap Icons y estilos propios. | Entrada: `resources/js/app.js`<br>Estilos propios: `resources/css/app.css`<br>Compilación: `vite.config.js` |
+| **Estilos y scripts** | Bootstrap 5.3 personalizado con Sass, Bootstrap Icons y fuente Inter. Solo modo claro. | Entrada: `resources/js/app.js`<br>Tema: `resources/scss/app.scss`<br>Compilación: `vite.config.js` |
 | **Textos en español** | Mensajes de validación y del sistema. | `lang/es/` y `lang/es.json` |
 | **Peticiones sin recargar (Axios)** | Se usa **Axios, no `fetch`**. Está disponible como `window.axios` y envía el token CSRF automáticamente. Se usará en la búsqueda del portal (Fase 6) y en las notificaciones (Fase 7). | Configuración: `resources/js/bootstrap.js` |
 
@@ -51,7 +51,7 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 | **Roles** | Crear y editar roles, con los permisos agrupados por módulo. El código del rol no cambia una vez creado. | **Lógica:** `app/Http/Controllers/Panel/RolController.php`<br>**Validaciones:** `app/Http/Requests/GuardarRolRequest.php`<br>**Pantallas:** `resources/views/panel/roles/` |
 | **Mi perfil** | Datos de la cuenta, permisos y cambio de contraseña (mínimo 8 caracteres, con letras y números). | **Lógica:** `app/Http/Controllers/Panel/PerfilController.php`<br>**Reglas de la contraseña:** `app/Providers/AppServiceProvider.php:26`<br>**Pantallas:** `resources/views/panel/perfil/` (`show`, `contrasena`) |
 | **Auditoría** | Se registran inicios y cierres de sesión, intentos fallidos, bloqueos, altas, modificaciones (valores anteriores y nuevos) y cambios de roles y permisos. Las contraseñas nunca se guardan. | **Cómo se registra:** `app/Support/Auditor.php` (los campos que nunca se guardan están en la línea 16)<br>**Nombres de las acciones en pantalla:** `app/Models/Auditoria.php:66` (`ETIQUETAS`) |
-| **Diseño** | Panel con menú lateral según la Figura 2, desplegable en el celular. Las secciones de fases futuras aparecen como «Próximamente». | **Opciones del menú:** `resources/views/layouts/panel.blade.php:9`<br>**Colores:** `resources/css/app.css:5` (`--gaceta-primario`, `--gaceta-acento`)<br>**Estructura común:** `resources/views/layouts/base.blade.php`<br>**Inicio del panel:** `resources/views/panel/inicio.blade.php` + `app/Http/Controllers/Panel/InicioController.php` |
+| **Diseño** | Panel con menú lateral según la Figura 2, desplegable en el celular. | **Opciones del menú:** `resources/views/layouts/panel.blade.php:15`<br>**Colores:** `resources/scss/app.scss:12`<br>**Estructura común:** `resources/views/layouts/base.blade.php`<br>**Inicio del panel:** `resources/views/panel/inicio.blade.php` + `app/Http/Controllers/Panel/InicioController.php` |
 | **Portal público (provisional)** | Portada hasta la Fase 6. | `resources/views/portal/inicio.blade.php` |
 | **Pruebas** | Inicio de sesión, usuarios, roles y perfil. | `tests/Feature/Auth/InicioSesionTest.php`, `tests/Feature/Panel/UsuarioAdministracionTest.php`, `RolAdministracionTest.php`, `PerfilTest.php` |
 
@@ -212,7 +212,9 @@ Una resolución nueva (origen) **abroga**, **deroga parcialmente** o **modifica*
 |---|---|
 | Otro número de intentos o de minutos de bloqueo | `app/Models/Usuario.php`, líneas 23 y 25 |
 | Contraseñas más exigentes (por ejemplo, con símbolos) | `app/Providers/AppServiceProvider.php:26` → agregar `->symbols()` |
-| Otro color institucional | `resources/css/app.css`, líneas 5 a 7 |
+| Otro color institucional | `resources/scss/app.scss`, líneas 12 a 14 (verde) y 79–80 (fondo y menú oscuro) |
+| Otra tipografía | `resources/scss/app.scss:34` y su `import` en `resources/js/app.js:1` |
+| Cambiar el logo | Reemplazar `public/img/logo-upea.png` (PNG sin fondo) y `public/img/favicon.png` |
 | Agregar o renombrar una opción del menú | `resources/views/layouts/panel.blade.php`, arreglo `$menu` |
 | Agregar un permiso nuevo | `database/seeders/RolesYPermisosSeeder.php` y luego `php artisan db:seed --class=RolesYPermisosSeeder` |
 | Cambiar un texto de error del inicio de sesión | `app/Http/Controllers/Auth/LoginController.php` (constante `MENSAJE_CREDENCIALES` y método `mensajeBloqueo`) |
@@ -239,6 +241,7 @@ Una resolución nueva (origen) **abroga**, **deroga parcialmente** o **modifica*
 | Cambiar un texto de las páginas de error | `resources/views/errors/<código>.blade.php` |
 | Agregar un tipo de relación (ej.: «Complementa») | Una línea en `database/seeders/TipoRelacionDocumentalSeeder.php` y `php artisan db:seed --class=TipoRelacionDocumentalSeeder` |
 | Retirar un tipo de relación | En el mismo seeder, último valor (`activo`) en `false` y volver a ejecutarlo |
+| Probar la API con Bruno | Abrir la colección `bruno/Gaceta UPEA`; token: `php artisan gaceta:token <usuario>` (`app/Console/Commands/TokenApi.php`) |
 | Desactivar las relaciones entre normas | `.env` → `GACETA_RELACIONES=false` y `php artisan config:clear` |
 | Cambiar los datos del administrador inicial | `.env` (`ADMIN_USUARIO`, `ADMIN_CORREO`, `ADMIN_CONTRASENA`) |
 

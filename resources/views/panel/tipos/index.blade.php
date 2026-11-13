@@ -16,7 +16,7 @@
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
                         <th>Tipo documental</th>
                         <th>Código</th>
@@ -36,7 +36,7 @@
                             <td class="font-monospace">{{ $tipo->codigo }}</td>
                             <td>
                                 @forelse ($tipo->campos() as $campo)
-                                    <span class="badge text-bg-light border" title="{{ \App\Models\TipoDocumental::TIPOS_CAMPO[$campo['tipo']] ?? $campo['tipo'] }}">
+                                    <span class="badge badge-suave" title="{{ \App\Models\TipoDocumental::TIPOS_CAMPO[$campo['tipo']] ?? $campo['tipo'] }}">
                                         {{ $campo['etiqueta'] }}@if ($campo['obligatorio']) *@endif
                                     </span>
                                 @empty

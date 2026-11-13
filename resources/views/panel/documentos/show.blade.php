@@ -8,21 +8,19 @@
     ? $documento->relacionesRecibidas->filter(fn ($r) => $r->tipo->quita_vigencia && $r->esEfectiva())
     : collect())
 
-@section('contenido')
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('panel.documentos.index') }}">Gestión documental</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ $documento->numero }}</li>
-        </ol>
-    </nav>
+@section('migas')
+    <li class="breadcrumb-item"><a href="{{ route('panel.documentos.index') }}">Documentos registrados</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ $documento->numero }}</li>
+@endsection
 
+@section('contenido')
     <div class="d-flex flex-wrap align-items-start gap-2 mb-3">
         <div>
             <div class="mb-1">
                 @include('panel.documentos._estado', ['estado' => $documento->estadoActual])
                 @unless ($documento->activo) <span class="badge text-bg-dark">Anulado</span> @endunless
                 @if ($abrogaciones->isNotEmpty()) <span class="badge text-bg-danger">No vigente</span> @endif
-                <span class="badge text-bg-light border">{{ $documento->tipoDocumental->nombre }}</span>
+                <span class="badge badge-suave">{{ $documento->tipoDocumental->nombre }}</span>
             </div>
             <h1 class="h4 mb-0">{{ $documento->nombreCorto() }}</h1>
             <p class="text-body-secondary mb-0">{{ $documento->titulo }}</p>
@@ -66,7 +64,7 @@
         {{-- Columna principal: PDF vigente y datos --}}
         <div class="col-xl-8">
             <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white d-flex flex-wrap align-items-center gap-2">
+                <div class="card-header bg-body d-flex flex-wrap align-items-center gap-2">
                     <h2 class="h6 mb-0">
                         <i class="bi bi-file-earmark-pdf text-danger me-1"></i>
                         Versión vigente @if ($vigente) (v{{ $vigente->numero_version }}) @endif
@@ -91,7 +89,7 @@
             </div>
 
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white"><h2 class="h6 mb-0">Datos del documento</h2></div>
+                <div class="card-header bg-body"><h2 class="h6 mb-0">Datos del documento</h2></div>
                 <dl class="row card-body mb-0">
                     <dt class="col-sm-4">Número</dt><dd class="col-sm-8 font-monospace">{{ $documento->numero }}</dd>
                     <dt class="col-sm-4">Gestión</dt><dd class="col-sm-8">{{ $documento->gestion }}</dd>
@@ -120,7 +118,7 @@
             @can('agregarVersion', $documento)
                 <form method="POST" action="{{ route('panel.documentos.versiones.store', $documento) }}" enctype="multipart/form-data" class="card border-0 shadow-sm mb-3">
                     @csrf
-                    <div class="card-header bg-white"><h2 class="h6 mb-0"><i class="bi bi-upload me-1"></i> Cargar nueva versión</h2></div>
+                    <div class="card-header bg-body"><h2 class="h6 mb-0"><i class="bi bi-upload me-1"></i> Cargar nueva versión</h2></div>
                     <div class="card-body">
                         <div class="mb-2">
                             <label for="archivo" class="form-label small">Archivo PDF</label>
@@ -137,14 +135,14 @@
                             @error('motivo_cambio') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
-                    <div class="card-footer bg-white text-end">
+                    <div class="card-footer bg-body text-end">
                         <button type="submit" class="btn btn-sm btn-gaceta"><i class="bi bi-cloud-upload me-1"></i> Cargar versión</button>
                     </div>
                 </form>
             @endcan
 
             <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white"><h2 class="h6 mb-0"><i class="bi bi-layers me-1"></i> Versiones del PDF</h2></div>
+                <div class="card-header bg-body"><h2 class="h6 mb-0"><i class="bi bi-layers me-1"></i> Versiones del PDF</h2></div>
                 <ul class="list-group list-group-flush">
                     @forelse ($documento->versiones as $version)
                         <li class="list-group-item">
@@ -180,7 +178,7 @@
             @include('panel.documentos._observaciones')
 
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white"><h2 class="h6 mb-0"><i class="bi bi-clock-history me-1"></i> Seguimiento</h2></div>
+                <div class="card-header bg-body"><h2 class="h6 mb-0"><i class="bi bi-clock-history me-1"></i> Seguimiento</h2></div>
                 <ol class="list-group list-group-flush list-group-numbered">
                     @forelse ($documento->seguimientos as $movimiento)
                         <li class="list-group-item d-flex gap-2">

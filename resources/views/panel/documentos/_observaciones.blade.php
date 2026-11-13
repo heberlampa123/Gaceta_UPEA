@@ -1,7 +1,7 @@
 {{-- Historial de observaciones del documento, agrupadas por la versión revisada (4.4.12) --}}
 @if ($documento->observaciones->isNotEmpty())
     <div class="card border-0 shadow-sm mb-3">
-        <div class="card-header bg-white d-flex align-items-center">
+        <div class="card-header bg-body d-flex align-items-center">
             <h2 class="h6 mb-0"><i class="bi bi-chat-left-text me-1"></i> Observaciones</h2>
             @php
                 $pendientesTotal = $documento->observaciones->whereNull('fecha_atencion')->count();

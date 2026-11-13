@@ -1,10 +1,10 @@
 @extends('layouts.panel')
 
-@section('titulo', 'Gestión documental')
+@section('titulo', 'Documentos registrados')
 
 @section('contenido')
     <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-        <h1 class="h3 mb-0">Gestión documental</h1>
+        <h1 class="h3 mb-0">Documentos registrados</h1>
         @can('documento.registrar')
             <a href="{{ route('panel.documentos.create') }}" class="btn btn-gaceta ms-auto">
                 <i class="bi bi-file-earmark-plus me-1"></i> Registrar documento
@@ -55,7 +55,7 @@
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
                         <th>Número</th>
                         <th>Título</th>
@@ -90,7 +90,7 @@
             </table>
         </div>
         @if ($documentos->hasPages())
-            <div class="card-footer bg-white">{{ $documentos->links() }}</div>
+            <div class="card-footer bg-body">{{ $documentos->links() }}</div>
         @endif
     </div>
 @endsection

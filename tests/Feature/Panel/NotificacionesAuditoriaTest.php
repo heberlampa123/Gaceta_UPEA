@@ -211,14 +211,19 @@ class NotificacionesAuditoriaTest extends TestCase
             ->assertSee('Mis documentos observados')
             ->assertSee('Mis borradores sin enviar')
             ->assertDontSee('Documentos por revisar')
+            ->assertDontSee('Visibles en el portal público') // indicadores generales: solo el Administrador
             ->assertSee('Su documento fue observado');
 
         $this->actingAs($this->revisor)->get('/panel')
             ->assertSee('Documentos por revisar')
             ->assertSee('Aprobados por publicar')
+            ->assertDontSee('Visibles en el portal público')
             ->assertDontSee('Mis borradores sin enviar');
 
         $admin = Usuario::factory()->conRol(Rol::ADMIN)->create();
-        $this->actingAs($admin)->get('/panel')->assertSee('Cuentas bloqueadas');
+        $this->actingAs($admin)->get('/panel')
+            ->assertSee('Cuentas bloqueadas')
+            ->assertSee('Visibles en el portal público')
+            ->assertSee('Ver publicados');
     }
 }

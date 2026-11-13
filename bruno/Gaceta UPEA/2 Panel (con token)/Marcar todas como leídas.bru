@@ -1,0 +1,20 @@
+meta {
+  name: Marcar todas como leídas
+  type: http
+  seq: 4
+}
+
+delete {
+  url: http://localhost:8000/api/notificaciones/leer-todas
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.no_leidas: eq 0
+}

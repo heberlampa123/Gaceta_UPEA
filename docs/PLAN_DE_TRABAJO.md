@@ -144,11 +144,11 @@
 
 ### Fase 9 — Diseño visual definitivo (RNF-04)
 Se realiza al final, cuando todas las funciones estén terminadas.
-- [ ] Obtener de la Gaceta / UPEA: logo oficial (SVG o PNG transparente), colores institucionales y, si existe, manual de identidad visual.
-- [ ] Definir la paleta y tipografía definitivas en `resources/css/app.css` (variables `--gaceta-*`).
-- [ ] Rediseñar las plantillas comunes: `resources/views/layouts/base.blade.php` y `panel.blade.php` (menú, barra superior, pie).
-- [ ] Diseño definitivo del portal público y de la pantalla de inicio de sesión.
-- [ ] Revisión de accesibilidad (contraste, navegación con teclado) y de pantallas pequeñas (celular).
+- [x] Logo de la UPEA convertido a PNG sin fondo (`public/img/logo-upea.png`) y favicon. Pendiente: confirmar con la Gaceta si existe un manual de identidad visual.
+- [x] Definir la paleta y tipografía definitivas en `resources/scss/app.scss` (Bootstrap personalizado con Sass, fuente Inter, verde del escudo, franja wiphala; solo modo claro en la primera versión).
+- [x] Rediseñar las plantillas comunes según la Figura 2: `resources/views/layouts/base.blade.php` y `panel.blade.php` (menú, barra superior, pie).
+- [x] Diseño del portal público (Figura 3), página «Acerca de la Gaceta» y pantalla de inicio de sesión.
+- [x] Pantallas pequeñas (celular) y contraste. Pendiente: revisión completa con teclado.
 - [ ] Validación del diseño con el personal de la Gaceta.
 
 **Entregable:** interfaz con la identidad institucional de la UPEA, aprobada por la Gaceta.

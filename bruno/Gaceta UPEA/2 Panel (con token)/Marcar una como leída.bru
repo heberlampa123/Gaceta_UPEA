@@ -1,0 +1,25 @@
+meta {
+  name: Marcar una como leída
+  type: http
+  seq: 3
+}
+
+patch {
+  url: http://localhost:8000/api/notificaciones/5/leer
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.no_leidas: isNumber
+}
+
+docs {
+  Ejecute antes «Resumen de notificaciones»: guarda en `idNotificacion` la primera no leída.
+  Una notificación de otro usuario responde **404**.
+}

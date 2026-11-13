@@ -6,7 +6,7 @@
     $error = fn (string $clave) => is_int($i) ? $errors->first("campos.{$i}.{$clave}") : null;
 @endphp
 
-<div class="border rounded p-3 mb-2 bg-white" data-campo>
+<div class="border rounded p-3 mb-2 bg-body" data-campo>
     <div class="row g-2 align-items-start">
         <div class="col-md-4">
             <label class="form-label small mb-1" for="campo-{{ $i }}-etiqueta">Etiqueta</label>

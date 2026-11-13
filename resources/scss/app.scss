@@ -1,0 +1,447 @@
+// =============================================================================
+// Tema visual del Sistema de la Gaceta Universitaria — UPEA (Fase 9)
+// -----------------------------------------------------------------------------
+// Bootstrap 5.3 personalizado con Sass. Todo el aspecto del sistema se cambia aquí:
+//   1. Paleta institucional (verde del escudo de la UPEA y colores de la wiphala).
+//   2. Variables de Bootstrap (tipografía, bordes, sombras). Solo modo claro.
+//   3. Componentes propios: menú del panel, encabezado del portal, tarjetas, insignias.
+// Después de modificar: npm run build y recargar con Ctrl + F5.
+// =============================================================================
+
+// ---------------------------------------------------------------- 1. Paleta
+$upea-verde: #93c01d;          // anillo del escudo (acento)
+$upea-verde-oscuro: #4d7c0f;   // botones y enlaces (contraste AA con texto blanco)
+$upea-verde-profundo: #3f6212; // estados "hover" y "activo"
+$pizarra-900: #0f172a;
+$pizarra-800: #1e293b;
+$pizarra-700: #334155;
+$pizarra-500: #64748b;
+$pizarra-100: #f1f5f9;
+
+// Colores de la wiphala, para la franja institucional.
+$wiphala: (#d52b1e, #f08a00, #ffd200, #ffffff, #00923f, #0072bc, #6c2a8c);
+
+// ---------------------------------------------------------------- 2. Bootstrap
+$enable-dark-mode: false; // primera versión: solo modo claro (Bootstrap no genera el tema oscuro)
+$primary: $upea-verde-oscuro;
+$secondary: $pizarra-500;
+$success: #15803d;
+$info: #0e7490;
+$warning: #d97706;
+$danger: #dc2626;
+$dark: $pizarra-800;
+
+$font-family-sans-serif: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-size-base: .9375rem;
+$headings-font-weight: 650;
+$headings-letter-spacing: -.01em;
+
+$body-bg: #ffffff;            // superficie (tarjetas, formularios, menús desplegables)
+$body-color: $pizarra-800;
+$body-secondary-color: rgba($pizarra-800, .68);
+$border-color: #e5e9f0;
+$link-color: $upea-verde-profundo;
+$link-decoration: none;
+$link-hover-decoration: underline;
+
+$border-radius: .5rem;
+$border-radius-sm: .375rem;
+$border-radius-lg: .75rem;
+$border-radius-xl: 1rem;
+$box-shadow-sm: 0 1px 2px rgba($pizarra-900, .05), 0 1px 3px rgba($pizarra-900, .05);
+$box-shadow: 0 4px 12px rgba($pizarra-900, .08);
+$box-shadow-lg: 0 12px 32px rgba($pizarra-900, .12);
+
+$input-btn-padding-y: .5rem;
+$input-btn-padding-x: .9rem;
+$input-btn-focus-width: .2rem;
+$input-btn-focus-color-opacity: .2;
+$btn-font-weight: 500;
+$card-border-color: var(--bs-border-color);
+$card-cap-bg: transparent;
+$card-cap-padding-y: .85rem;
+$card-spacer-x: 1.25rem;
+$table-cell-padding-y: .75rem;
+$table-cell-padding-x: .75rem;
+$table-th-font-weight: 600;
+$badge-font-weight: 600;
+$badge-padding-y: .4em;
+$badge-padding-x: .7em;
+$dropdown-border-color: var(--bs-border-color);
+$breadcrumb-divider: quote("/");
+$pagination-border-radius: $border-radius;
+
+@import "bootstrap/scss/bootstrap";
+
+// ---------------------------------------------------------------- 3. Propios
+
+:root {
+    --gaceta-fondo: #f3f5f8;           // fondo de la página (detrás de las tarjetas)
+    --gaceta-oscuro: #{$pizarra-800};  // menú del panel y encabezado del portal
+    --gaceta-oscuro-borde: rgba(255, 255, 255, .08);
+    --gaceta-acento: #{$upea-verde};
+    --gaceta-icono-fondo: #{$pizarra-100};
+    --gaceta-ancho-menu: 264px;
+}
+
+
+body {
+    background-color: var(--gaceta-fondo);
+    -webkit-font-smoothing: antialiased;
+}
+
+// Franja con los colores de la wiphala (encabezado del portal, menú del panel, inicio de sesión).
+.franja-wiphala {
+    height: 4px;
+    background: linear-gradient(90deg,
+        nth($wiphala, 1) 0 14.28%, nth($wiphala, 2) 0 28.57%, nth($wiphala, 3) 0 42.85%,
+        nth($wiphala, 4) 0 57.14%, nth($wiphala, 5) 0 71.42%, nth($wiphala, 6) 0 85.71%, nth($wiphala, 7) 0);
+}
+
+// Botón principal (se conserva el nombre usado en todas las vistas).
+.btn-gaceta {
+    @include button-variant($upea-verde-oscuro, $upea-verde-oscuro, #fff, $upea-verde-profundo, $upea-verde-profundo, #fff,
+        $upea-verde-profundo, $upea-verde-profundo, #fff);
+}
+
+.text-gaceta { color: var(--bs-primary-text-emphasis); }
+
+// Tarjetas: sin sombra marcada, borde fino; las vistas usan "border-0 shadow-sm".
+.card {
+    --bs-card-bg: var(--bs-body-bg);
+    &.border-0 { border: 1px solid var(--bs-border-color) !important; }
+    &.shadow-sm { box-shadow: $box-shadow-sm !important; }
+}
+
+.card-header {
+    border-bottom-color: var(--bs-border-color);
+    h2, .h6 { font-weight: 600; }
+}
+
+// Encabezados de tabla discretos, en mayúsculas pequeñas.
+.table > thead th {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--bs-secondary-color);
+    background-color: var(--bs-tertiary-bg);
+    border-bottom-width: 1px;
+    white-space: nowrap;
+}
+
+.table { --bs-table-bg: transparent; }
+.table-hover > tbody > tr:hover > * { --bs-table-bg-state: var(--bs-tertiary-bg); }
+
+// Insignia neutra (tipo documental, rol, campo…), válida en ambos modos.
+.badge-suave {
+    color: var(--bs-body-color);
+    background-color: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+    font-weight: 500;
+}
+
+// Insignias de estado del documento: color suave con texto oscuro.
+.estado {
+    display: inline-flex;
+    align-items: center;
+    gap: .35em;
+    border: 1px solid transparent;
+    border-radius: 50rem;
+    font-weight: 600;
+
+    &::before {
+        content: "";
+        width: .45em;
+        height: .45em;
+        border-radius: 50%;
+        background-color: currentColor;
+    }
+}
+
+@each $codigo, $color in (borrador: secondary, pendiente_revision: warning, observado: danger, aprobado: info, publicado: success) {
+    .estado-#{$codigo} {
+        color: var(--bs-#{$color}-text-emphasis);
+        background-color: var(--bs-#{$color}-bg-subtle);
+        border-color: var(--bs-#{$color}-border-subtle);
+    }
+}
+
+// Ícono en un cuadro de color (indicadores del inicio, resultados del portal).
+.icono-cuadro {
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $border-radius-lg;
+    background-color: var(--gaceta-icono-fondo);
+    color: var(--bs-secondary-color);
+    font-size: 1.35rem;
+}
+
+// Encabezado de cada página del panel: título, subtítulo y acciones.
+.encabezado-pagina {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    h1 { margin-bottom: .15rem; }
+    p { margin-bottom: 0; color: var(--bs-secondary-color); }
+    .acciones { margin-left: auto; display: flex; flex-wrap: wrap; gap: .5rem; }
+}
+
+// Botón de ícono redondo (barra superior).
+.btn-icono {
+    --bs-btn-padding-x: .55rem;
+    --bs-btn-padding-y: .4rem;
+    --bs-btn-color: var(--bs-secondary-color);
+    --bs-btn-hover-color: var(--bs-body-color);
+    --bs-btn-hover-bg: var(--bs-tertiary-bg);
+    --bs-btn-active-bg: var(--bs-secondary-bg);
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-border-color: transparent;
+    border-radius: 50%;
+    line-height: 1;
+}
+
+.avatar {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: .85rem;
+    color: #fff;
+    background: linear-gradient(135deg, $upea-verde-oscuro, $upea-verde);
+}
+
+// ------------------------------------------------ Panel administrativo (Figura 2)
+// Bootstrap pone "background-color: transparent !important" al offcanvas-lg en
+// pantallas grandes: se usa un selector más específico para conservar el fondo.
+aside.panel-menu,
+aside.panel-menu.offcanvas-lg {
+    --bs-offcanvas-width: var(--gaceta-ancho-menu);
+    width: var(--gaceta-ancho-menu);
+    background-color: var(--gaceta-oscuro) !important;
+    color: #fff;
+    overflow-x: hidden;
+}
+
+.panel-menu {
+    .marca {
+        border-bottom: 1px solid var(--gaceta-oscuro-borde);
+        img { width: 2.6rem; height: auto; }
+    }
+
+    .nav-link {
+        color: rgba(255, 255, 255, .72);
+        border-radius: $border-radius;
+        padding: .6rem .8rem;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        white-space: normal;
+        font-weight: 500;
+        transition: background-color .15s, color .15s;
+
+        i { font-size: 1.1rem; opacity: .9; }
+    }
+
+    .nav-link:hover {
+        color: #fff;
+        background-color: rgba(255, 255, 255, .06);
+    }
+
+    .nav-link.active {
+        color: #fff;
+        background-color: rgba($upea-verde, .16);
+        box-shadow: inset 3px 0 0 var(--gaceta-acento);
+        i { color: var(--gaceta-acento); }
+    }
+
+    .seccion {
+        color: rgba(255, 255, 255, .42);
+        font-size: .7rem;
+        font-weight: 600;
+        letter-spacing: .09em;
+        text-transform: uppercase;
+    }
+
+    .contador {
+        margin-left: auto;
+        min-width: 1.5rem;
+        background-color: rgba(255, 255, 255, .12);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .pie-menu { border-top: 1px solid var(--gaceta-oscuro-borde); }
+}
+
+.panel-barra {
+    background-color: var(--bs-body-bg);
+    border-bottom: 1px solid var(--bs-border-color);
+    min-height: 4rem;
+
+    .enlace-barra {
+        color: var(--bs-secondary-color);
+        font-weight: 500;
+        &.active, &:hover { color: var(--bs-body-color); text-decoration: none; }
+    }
+}
+
+.panel-migas {
+    background-color: var(--bs-body-bg);
+    border-bottom: 1px solid var(--bs-border-color);
+    .breadcrumb { margin: 0; font-size: .875rem; }
+}
+
+@media (min-width: 992px) {
+    .panel-contenido { margin-left: var(--gaceta-ancho-menu); }
+
+    aside.panel-menu .offcanvas-header { display: flex !important; }
+
+    .panel-menu.offcanvas-lg {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+}
+
+// Indicadores del inicio (tarjetas que llevan a la lista filtrada).
+.indicador {
+    color: inherit;
+    text-decoration: none !important;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+
+    &:hover, &:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: $box-shadow !important;
+        border-color: rgba($upea-verde-oscuro, .45) !important;
+    }
+
+    .valor { font-size: 1.85rem; font-weight: 700; line-height: 1; letter-spacing: -.02em; }
+    .card-footer { font-weight: 500; font-size: .875rem; }
+}
+
+// ------------------------------------------------ Portal público (Figura 3)
+// Bienvenida del inicio: foto del edificio emblemático con un degradado oscuro para que el texto se lea.
+.portal-bienvenida {
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    background-color: $pizarra-900;
+
+    .portal-bienvenida-foto {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 35%;
+    }
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: linear-gradient(90deg, rgba($pizarra-900, .92) 0%, rgba($pizarra-900, .78) 45%, rgba($pizarra-900, .25) 100%);
+    }
+
+    > .container { z-index: 2; }
+    .lead { color: rgba(#fff, .88); }
+    .portal-bienvenida-dato { color: rgba(#fff, .75); }
+
+    .portal-bienvenida-etiqueta {
+        background-color: rgba($upea-verde, .2);
+        color: lighten($upea-verde, 15%);
+        border: 1px solid rgba($upea-verde, .45);
+        font-weight: 500;
+    }
+}
+
+.portal-encabezado {
+    background-color: var(--gaceta-oscuro);
+    color: #fff;
+
+    .marca img { width: 3rem; height: auto; }
+
+    .nav-portal .nav-link {
+        color: rgba(255, 255, 255, .75);
+        font-weight: 500;
+        padding: .5rem .25rem;
+        border-bottom: 2px solid transparent;
+
+        &:hover { color: #fff; }
+        &.active { color: #fff; border-bottom-color: var(--gaceta-acento); }
+    }
+}
+
+.portal-heroe {
+    background-color: var(--bs-body-bg);
+    border-bottom: 1px solid var(--bs-border-color);
+
+}
+
+.resultado {
+    transition: box-shadow .15s, border-color .15s;
+    &:hover { box-shadow: $box-shadow !important; border-color: rgba($upea-verde-oscuro, .35) !important; }
+
+    .icono-pdf {
+        width: 3.25rem;
+        height: 4rem;
+        flex: 0 0 auto;
+        border: 2px solid var(--bs-border-color);
+        border-radius: $border-radius-sm;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        padding-bottom: .35rem;
+        font-size: .65rem;
+        font-weight: 700;
+        color: $danger;
+        background: repeating-linear-gradient(180deg, transparent 0 .55rem, var(--bs-border-color) .55rem calc(.55rem + 2px)) no-repeat center .6rem / 60% 1.6rem;
+    }
+}
+
+.portal-pie {
+    background-color: var(--bs-body-bg);
+    border-top: 1px solid var(--bs-border-color);
+}
+
+// ------------------------------------------------ Inicio de sesión
+.auth-pagina {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+
+    @media (min-width: 992px) { grid-template-columns: 1.1fr 1fr; grid-template-rows: 1fr; }
+
+    .auth-lado {
+        background:
+            radial-gradient(circle at 20% 15%, rgba($upea-verde, .22), transparent 45%),
+            radial-gradient(circle at 85% 90%, rgba(#0072bc, .18), transparent 40%),
+            var(--gaceta-oscuro);
+        color: #fff;
+        img { width: min(14rem, 60%); height: auto; filter: drop-shadow(0 12px 24px rgba(0, 0, 0, .35)); }
+    }
+
+    .auth-formulario { max-width: 26rem; width: 100%; }
+}
+
+
+.min-w-0 { min-width: 0; }
+
+

@@ -38,7 +38,7 @@
                         </div>
                     @endforeach
                 </div>
-                <div class="card-footer bg-white d-flex justify-content-end gap-2">
+                <div class="card-footer bg-body d-flex justify-content-end gap-2">
                     @unless ($obligatorio)
                         <a href="{{ route('panel.perfil') }}" class="btn btn-outline-secondary">Cancelar</a>
                     @endunless

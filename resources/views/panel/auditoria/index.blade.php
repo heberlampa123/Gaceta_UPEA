@@ -62,10 +62,10 @@
     </form>
 
     <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white small text-body-secondary">{{ number_format($registros->total(), 0, ',', '.') }} registro(s)</div>
+        <div class="card-header bg-body small text-body-secondary">{{ number_format($registros->total(), 0, ',', '.') }} registro(s)</div>
         <div class="table-responsive">
             <table class="table table-sm table-hover align-middle mb-0 small">
-                <thead class="table-light">
+                <thead>
                     <tr>
                         <th>Fecha</th>
                         <th>Usuario</th>
@@ -81,7 +81,7 @@
                             <td class="text-nowrap">{{ $registro->fecha->format('d/m/Y H:i:s') }}</td>
                             <td>{{ $registro->usuario?->nombre_completo ?? '—' }} @if ($registro->usuario) <span class="text-body-secondary">({{ $registro->usuario->nombre_usuario }})</span> @endif</td>
                             <td>
-                                <span @class(['badge', 'text-bg-danger' => str_contains($registro->accion, 'FALLIDO') || str_contains($registro->accion, 'BLOQUEO'), 'text-bg-light border' => ! (str_contains($registro->accion, 'FALLIDO') || str_contains($registro->accion, 'BLOQUEO'))])>
+                                <span @class(['badge', 'text-bg-danger' => str_contains($registro->accion, 'FALLIDO') || str_contains($registro->accion, 'BLOQUEO'), 'badge-suave' => ! (str_contains($registro->accion, 'FALLIDO') || str_contains($registro->accion, 'BLOQUEO'))])>
                                     {{ $registro->etiqueta() }}
                                 </span>
                             </td>
@@ -91,7 +91,7 @@
                                 @if ($registro->detalle)
                                     <details>
                                         <summary class="text-primary">Ver detalle</summary>
-                                        <pre class="bg-light border rounded p-2 mt-1 mb-0 small" style="max-height: 240px; white-space: pre-wrap">{{ json_encode($registro->detalle, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
+                                        <pre class="bg-body-tertiary border rounded p-2 mt-1 mb-0 small" style="max-height: 240px; white-space: pre-wrap">{{ json_encode($registro->detalle, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
                                     </details>
                                 @else
                                     <span class="text-body-secondary">—</span>
@@ -105,7 +105,7 @@
             </table>
         </div>
         @if ($registros->hasPages())
-            <div class="card-footer bg-white">{{ $registros->links() }}</div>
+            <div class="card-footer bg-body">{{ $registros->links() }}</div>
         @endif
     </div>
 @endsection

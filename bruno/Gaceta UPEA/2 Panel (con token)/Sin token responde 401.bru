@@ -1,0 +1,19 @@
+meta {
+  name: Sin token responde 401
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8000/api/notificaciones/resumen
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}
+
+docs {
+  Prueba de seguridad: sin token, la API protegida no entrega datos.
+}

@@ -1,6 +1,6 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fontsource-variable/inter';
 import 'bootstrap-icons/font/bootstrap-icons.min.css';
-import '../css/app.css'; // después de Bootstrap, para que nuestros estilos tengan prioridad
+import '../scss/app.scss'; // Bootstrap personalizado + estilos propios (Fase 9)
 import * as bootstrap from 'bootstrap';
 import './bootstrap';
 import { iniciarCamposAdicionales } from './campos-adicionales';

@@ -8,7 +8,7 @@
 @php($puedeEditar = auth()->user()->can('update', $documento))
 
 <div class="card border-0 shadow-sm mb-3">
-    <div class="card-header bg-white"><h2 class="h6 mb-0"><i class="bi bi-diagram-3 me-1"></i> Relación con otras normas</h2></div>
+    <div class="card-header bg-body"><h2 class="h6 mb-0"><i class="bi bi-diagram-3 me-1"></i> Relación con otras normas</h2></div>
 
     @if ($emitidas->isEmpty() && $recibidas->isEmpty() && ! $puedeEditar)
         <div class="card-body small text-body-secondary">Este documento no abroga, deroga ni modifica otras normas, y ninguna lo afecta.</div>
@@ -22,7 +22,7 @@
             @foreach ($emitidas as $relacion)
                 <li class="list-group-item small d-flex gap-2 align-items-start">
                     <div class="flex-grow-1">
-                        <span @class(['badge', 'text-bg-danger' => $relacion->tipo->quita_vigencia, 'text-bg-warning' => ! $relacion->tipo->quita_vigencia])>{{ $relacion->tipo->nombre }}</span>
+                        <span @class(['badge', 'bg-danger-subtle text-danger-emphasis border border-danger-subtle' => $relacion->tipo->quita_vigencia, 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' => ! $relacion->tipo->quita_vigencia])>{{ $relacion->tipo->nombre }}</span>
                         <a href="{{ route('panel.documentos.show', $relacion->destino) }}">{{ $relacion->destino->nombreCorto() }}</a>
                         @if ($relacion->detalle) <div>{{ $relacion->detalle }}</div> @endif
                         @unless ($relacion->esEfectiva())
@@ -48,7 +48,7 @@
         <ul class="list-group list-group-flush">
             @foreach ($recibidas as $relacion)
                 <li class="list-group-item small">
-                    <span @class(['badge', 'text-bg-danger' => $relacion->tipo->quita_vigencia, 'text-bg-warning' => ! $relacion->tipo->quita_vigencia])>{{ $relacion->tipo->nombre_inverso }}</span>
+                    <span @class(['badge', 'bg-danger-subtle text-danger-emphasis border border-danger-subtle' => $relacion->tipo->quita_vigencia, 'bg-warning-subtle text-warning-emphasis border border-warning-subtle' => ! $relacion->tipo->quita_vigencia])>{{ $relacion->tipo->nombre_inverso }}</span>
                     <a href="{{ route('panel.documentos.show', $relacion->origen) }}">{{ $relacion->origen->nombreCorto() }}</a>
                     @if ($relacion->detalle) <div>{{ $relacion->detalle }}</div> @endif
                     @unless ($relacion->esEfectiva())

@@ -43,7 +43,7 @@
         <div class="row g-3">
             @foreach ($permisosPorModulo as $modulo => $permisos)
                 <div class="col-md-6 col-xl-4">
-                    <fieldset class="border rounded p-3 h-100 bg-white">
+                    <fieldset class="border rounded p-3 h-100 bg-body">
                         <legend class="float-none w-auto px-2 fs-6 text-capitalize fw-semibold mb-0">{{ $modulo }}</legend>
                         @foreach ($permisos as $permiso)
                             <div class="form-check mt-2">

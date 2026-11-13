@@ -54,7 +54,7 @@
             <div class="row g-2">
                 @foreach ($roles as $rol)
                     <div class="col-md-4">
-                        <div class="form-check border rounded p-2 ps-5 h-100 bg-white">
+                        <div class="form-check border rounded p-2 ps-5 h-100 bg-body">
                             <input class="form-check-input" type="checkbox" name="roles[]" value="{{ $rol->id_rol }}" id="rol{{ $rol->id_rol }}"
                                    @checked(in_array($rol->id_rol, array_map('intval', $rolesAsignados)))>
                             <label class="form-check-label" for="rol{{ $rol->id_rol }}">

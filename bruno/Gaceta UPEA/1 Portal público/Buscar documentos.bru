@@ -1,0 +1,53 @@
+meta {
+  name: Buscar documentos
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8000/api/documentos
+  body: none
+  auth: none
+}
+
+params:query {
+  ~q: reglamento
+  ~tipo: 1
+  ~gestion: 2026
+  ~numero: 025
+  ~desde: 2026-01-01
+  ~hasta: 2026-12-31
+  ~instancia: Honorable Consejo Universitario
+  ~orden: recientes
+  ~page: 1
+}
+
+assert {
+  res.status: eq 200
+  res.body.data: isArray
+  res.body.meta.total: isNumber
+}
+
+tests {
+  test("solo devuelve datos públicos (sin rutas de archivos ni usuarios)", function () {
+    const doc = res.getBody().data[0];
+    if (!doc) return;
+    expect(doc).to.have.keys(['id', 'tipo', 'numero', 'gestion', 'titulo', 'resumen', 'instancia_emisora',
+      'fecha_emision', 'fecha_emision_texto', 'fecha_publicacion_texto', 'url', 'url_pdf', 'url_descarga']);
+  });
+  
+  test("guarda el id del primer resultado para otras pruebas", function () {
+    const doc = res.getBody().data[0];
+    if (doc) bru.setVar("idDocumento", doc.id);
+  });
+}
+
+docs {
+  Busca documentos **publicados y vigentes** (las normas abrogadas no aparecen).
+  
+  Active los parámetros que quiera probar (casilla a la izquierda de cada uno):
+  - `q`: número, título o palabras clave
+  - `tipo`: id del tipo documental · `gestion`: año · `numero`: parte del número
+  - `desde` / `hasta`: fecha de emisión (AAAA-MM-DD) · `instancia`: instancia emisora
+  - `orden`: recientes | antiguos | numero · `page`: página (10 por página)
+}

@@ -6,8 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Auditoria;
 use App\Models\Documento;
 use App\Models\EstadoDocumento;
+use App\Models\Rol;
+use App\Models\SeguimientoDocumento;
+use App\Models\TipoDocumental;
 use App\Models\Usuario;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 /**
@@ -55,15 +60,57 @@ class InicioController extends Controller
                 route('panel.usuarios.index', ['estado' => 'bloqueados']), 'lock', 'danger']);
         }
 
+        $verDocumentos = $usuario->can('documento.ver');
+        $filtros = array_filter($request->only(['buscar', 'gestion', 'tipo', 'estado', 'fecha']), fn ($v) => is_string($v) && $v !== '');
+
         return view('panel.inicio', [
             'usuario' => $usuario,
-            'estados' => $estados,
+            // Los indicadores generales (totales por estado) solo los ve el Administrador.
+            'indicadores' => $usuario->tieneRol(Rol::ADMIN) ? $this->indicadores($estados) : collect(),
             'pendientes' => $pendientes,
-            'notificaciones' => $usuario->notificaciones()->noLeidas()->latest('fecha_creacion')->limit(5)->get(),
-            'recientes' => $usuario->can('documento.ver')
-                ? Documento::activos()->with(['estadoActual', 'tipoDocumental'])->latest('fecha_actualizacion')->limit(5)->get()
-                : collect(),
+            'filtros' => $filtros,
+            'movimientos' => $verDocumentos ? $this->actividadDocumental($filtros) : collect(),
+            'gestiones' => $verDocumentos ? Documento::activos()->distinct()->orderByDesc('gestion')->pluck('gestion') : collect(),
+            'tipos' => TipoDocumental::orderBy('nombre')->get(['id_tipo_documental', 'nombre']),
+            'estados' => $estados,
             'actividad' => Auditoria::where('id_usuario', $id)->latest('fecha')->latest('id_auditoria')->limit(5)->get(),
         ]);
+    }
+
+    /**
+     * Indicadores del modelo (Figura 2): total y tres estados clave; cada uno abre la lista filtrada.
+     * Cada uno: [título, cantidad, descripción, ícono, enlace, texto del enlace].
+     */
+    private function indicadores(Collection $estados): Collection
+    {
+        $cantidad = fn (string $codigo) => (int) $estados->firstWhere('codigo', $codigo)?->documentos_count;
+        $lista = fn (?string $codigo = null) => route('panel.documentos.index', array_filter(['estado' => $codigo]));
+
+        return collect([
+            ['Documentos', (int) $estados->sum('documentos_count'), 'Registrados en el sistema', 'file-earmark-text', $lista(), 'Ver todos'],
+            ['Pendientes', $cantidad(EstadoDocumento::PENDIENTE_REVISION), 'En espera de revisión', 'hourglass-split', $lista(EstadoDocumento::PENDIENTE_REVISION), 'Ver pendientes'],
+            ['Aprobados', $cantidad(EstadoDocumento::APROBADO), 'Listos para publicar', 'check2-circle', $lista(EstadoDocumento::APROBADO), 'Ver aprobados'],
+            ['Publicados', $cantidad(EstadoDocumento::PUBLICADO), 'Visibles en el portal público', 'globe2', $lista(EstadoDocumento::PUBLICADO), 'Ver publicados'],
+        ]);
+    }
+
+    /** Últimos movimientos documentales (registro, envío, observación, aprobación, publicación…). */
+    private function actividadDocumental(array $filtros): Collection
+    {
+        $fecha = isset($filtros['fecha']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filtros['fecha']) ? $filtros['fecha'] : null;
+
+        return SeguimientoDocumento::query()
+            ->with(['documento.tipoDocumental', 'usuario.roles', 'estadoNuevo', 'version'])
+            ->whereHas('documento', fn (Builder $d) => $d->activos()
+                ->when($filtros['buscar'] ?? null, fn (Builder $q, string $t) => $q->where(fn (Builder $w) => $w
+                    ->buscar($t)->orWhere('numero', 'ilike', '%'.$t.'%')->orWhere('titulo', 'ilike', '%'.$t.'%')))
+                ->when($filtros['gestion'] ?? null, fn (Builder $q, $g) => $q->where('gestion', (int) $g))
+                ->when($filtros['tipo'] ?? null, fn (Builder $q, $t) => $q->where('id_tipo_documental', (int) $t)))
+            ->when($filtros['estado'] ?? null, fn (Builder $q, string $e) => $q->whereHas('estadoNuevo', fn (Builder $s) => $s->where('codigo', $e)))
+            ->when($fecha, fn (Builder $q) => $q->whereDate('fecha', $fecha))
+            ->latest('fecha')
+            ->latest('id_seguimiento')
+            ->limit(8)
+            ->get();
     }
 }

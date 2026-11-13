@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::get('/', [PortalController::class, 'index'])->name('portal.inicio');
+Route::view('/acerca', 'portal.acerca')->name('portal.acerca');
 Route::get('/documentos/{documento}', [PortalController::class, 'show'])->whereNumber('documento')->name('portal.documentos.show');
 Route::get('/documentos/{documento}/pdf', [PortalController::class, 'pdf'])->whereNumber('documento')
     ->middleware('throttle:descargas')->name('portal.documentos.pdf');

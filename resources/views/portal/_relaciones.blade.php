@@ -7,18 +7,18 @@
 
 @if ($emitidas->isNotEmpty() || $recibidas->isNotEmpty())
     <div class="card border-0 shadow-sm mb-3">
-        <div class="card-header bg-white"><h2 class="h6 mb-0"><i class="bi bi-diagram-3 me-1"></i> Relación con otras normas</h2></div>
+        <div class="card-header bg-body"><h2 class="h6 mb-0"><i class="bi bi-diagram-3 me-1"></i> Relación con otras normas</h2></div>
         <ul class="list-group list-group-flush small">
             @foreach ($recibidas as $relacion)
                 <li class="list-group-item">
-                    <span class="badge text-bg-warning">{{ $relacion->tipo->nombre_inverso }}</span>
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">{{ $relacion->tipo->nombre_inverso }}</span>
                     <a href="{{ route('portal.documentos.show', $relacion->origen) }}">{{ $relacion->origen->nombreCorto() }}</a>
                     @if ($relacion->detalle) <div class="text-body-secondary">{{ $relacion->detalle }}</div> @endif
                 </li>
             @endforeach
             @foreach ($emitidas as $relacion)
                 <li class="list-group-item">
-                    <span class="badge text-bg-light border">{{ $relacion->tipo->nombre }}</span>
+                    <span class="badge badge-suave">{{ $relacion->tipo->nombre }}</span>
                     @if ($relacion->destino->esVigente())
                         <a href="{{ route('portal.documentos.show', $relacion->destino) }}">{{ $relacion->destino->nombreCorto() }}</a>
                     @else

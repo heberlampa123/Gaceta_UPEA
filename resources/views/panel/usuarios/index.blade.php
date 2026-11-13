@@ -44,7 +44,7 @@
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
                         <th>Nombre</th>
                         <th>Usuario</th>
@@ -64,7 +64,7 @@
                             <td class="font-monospace">{{ $usuario->nombre_usuario }}</td>
                             <td>
                                 @foreach ($usuario->roles as $rol)
-                                    <span class="badge text-bg-light border">{{ $rol->nombre }}</span>
+                                    <span class="badge badge-suave">{{ $rol->nombre }}</span>
                                 @endforeach
                             </td>
                             <td>
@@ -93,7 +93,7 @@
             </table>
         </div>
         @if ($usuarios->hasPages())
-            <div class="card-footer bg-white">{{ $usuarios->links() }}</div>
+            <div class="card-footer bg-body">{{ $usuarios->links() }}</div>
         @endif
     </div>
 @endsection

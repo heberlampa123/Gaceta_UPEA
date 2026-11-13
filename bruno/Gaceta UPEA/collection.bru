@@ -1,0 +1,26 @@
+headers {
+  Accept: application/json
+}
+
+vars:pre-request {
+  : base64:xT673h19gUSQmCTzKTJI+Djdjl1o8SR7K5um3HbpQQ0=
+}
+
+vars:post-response {
+  : base64:xT673h19gUSQmCTzKTJI+Djdjl1o8SR7K5um3HbpQQ0=
+}
+
+docs {
+  # API de la Gaceta Universitaria (UPEA)
+  
+  - **Portal público**: sin autenticación. Límite: 60 consultas por minuto por IP.
+  - **Panel (con token)**: requiere un token de Sanctum en la variable secreta `token` del entorno.
+  
+  Crear el token (se muestra una sola vez):
+  
+      php artisan gaceta:token revisor
+  
+  Revocarlo:
+  
+      php artisan gaceta:token revisor --revocar
+}

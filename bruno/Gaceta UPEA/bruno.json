@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "Gaceta UPEA",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}

@@ -6,8 +6,9 @@
 
 @section('cuerpo')
     <main class="card border-0 shadow-sm text-center" style="max-width: 32rem">
+        <div class="franja-wiphala rounded-top"></div>
         <div class="card-body p-5">
-            <i class="bi bi-{{ $icono }} text-gaceta" style="font-size: 3.5rem"></i>
+            <img src="{{ asset('img/logo-upea.png') }}" alt="" width="64" class="mb-3"><br><i class="bi bi-{{ $icono }} text-gaceta" style="font-size: 2.5rem"></i>
             <p class="text-body-secondary mb-1 mt-2">Error {{ $codigo }}</p>
             <h1 class="h4">{{ $titulo }}</h1>
             <p class="text-body-secondary">{{ $mensaje }}</p>

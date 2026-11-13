@@ -14,7 +14,7 @@
                 <a href="{{ route('panel.revision.index', ['bandeja' => $clave]) }}"
                    @class(['nav-link', 'active' => $bandeja === $clave]) @if ($bandeja === $clave) aria-current="page" @endif>
                     {{ $titulo }}
-                    <span @class(['badge rounded-pill ms-1', 'text-bg-primary' => $conteos[$clave] > 0, 'text-bg-light border' => $conteos[$clave] === 0])>{{ $conteos[$clave] }}</span>
+                    <span @class(['badge rounded-pill ms-1', 'text-bg-primary' => $conteos[$clave] > 0, 'badge-suave' => $conteos[$clave] === 0])>{{ $conteos[$clave] }}</span>
                 </a>
             </li>
         @endforeach
@@ -23,7 +23,7 @@
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
                         <th>Número</th>
                         <th>Título</th>
@@ -66,7 +66,7 @@
             </table>
         </div>
         @if ($documentos->hasPages())
-            <div class="card-footer bg-white">{{ $documentos->links() }}</div>
+            <div class="card-footer bg-body">{{ $documentos->links() }}</div>
         @endif
     </div>
 @endsection

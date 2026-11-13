@@ -1,0 +1,31 @@
+meta {
+  name: Usuario actual
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8000/api/user
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.nombre_usuario: isString
+}
+
+tests {
+  test("no expone la contraseña", function () {
+    expect(res.getBody()).to.not.have.property('contrasena_hash');
+  });
+}
+
+docs {
+  Comprueba que el token funciona. Si responde **401**, el token falta, venció o fue revocado:
+  genere otro con `php artisan gaceta:token <usuario>` y péguelo en el entorno (variable `token`).
+}

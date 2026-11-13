@@ -1,0 +1,28 @@
+meta {
+  name: Filtros combinados
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8000/api/documentos?gestion=2026&orden=antiguos
+  body: none
+  auth: none
+}
+
+params:query {
+  gestion: 2026
+  orden: antiguos
+}
+
+assert {
+  res.status: eq 200
+  res.body.filtros.gestion: eq 2026
+  res.body.filtros.orden: eq antiguos
+}
+
+tests {
+  test("todos los resultados son de la gestión 2026", function () {
+    res.getBody().data.forEach(d => expect(d.gestion).to.equal(2026));
+  });
+}

@@ -41,7 +41,7 @@
             @endforelse
         </div>
         @if ($notificaciones->hasPages())
-            <div class="card-footer bg-white">{{ $notificaciones->links() }}</div>
+            <div class="card-footer bg-body">{{ $notificaciones->links() }}</div>
         @endif
     </div>
 @endsection

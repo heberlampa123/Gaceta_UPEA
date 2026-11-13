@@ -3,23 +3,25 @@
 @section('titulo', $documento->nombreCorto())
 
 @section('contenido')
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('portal.inicio') }}">Documentos</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ $documento->numero }}</li>
-        </ol>
-    </nav>
+    <section class="portal-heroe">
+        <div class="container py-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb small">
+                    <li class="breadcrumb-item"><a href="{{ route('portal.inicio') }}">Documentos</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ $documento->numero }}</li>
+                </ol>
+            </nav>
+            <span class="badge badge-suave">{{ $documento->tipoDocumental->nombre }}</span>
+            <h1 class="h2 fw-bold mt-2 mb-1">{{ $documento->nombreCorto() }}</h1>
+            <p class="lead text-body-secondary mb-0">{{ $documento->titulo }}</p>
+        </div>
+    </section>
 
-    <div class="mb-3">
-        <span class="badge text-bg-light border">{{ $documento->tipoDocumental->nombre }}</span>
-        <h1 class="h3 mt-1 mb-1">{{ $documento->nombreCorto() }}</h1>
-        <p class="lead mb-0">{{ $documento->titulo }}</p>
-    </div>
-
+    <div class="container py-4">
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white d-flex flex-wrap align-items-center gap-2">
+                <div class="card-header bg-body d-flex flex-wrap align-items-center gap-2">
                     <h2 class="h6 mb-0"><i class="bi bi-file-earmark-pdf text-danger me-1"></i> Documento</h2>
                     <div class="ms-auto d-flex gap-2">
                         <a href="{{ route('portal.documentos.pdf', $documento) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary">
@@ -37,7 +39,7 @@
 
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white"><h2 class="h6 mb-0">Datos del documento</h2></div>
+                <div class="card-header bg-body"><h2 class="h6 mb-0">Datos del documento</h2></div>
                 <dl class="card-body mb-0">
                     <dt class="small text-body-secondary">Número</dt><dd class="font-monospace">{{ $documento->numero }}</dd>
                     <dt class="small text-body-secondary">Gestión</dt><dd>{{ $documento->gestion }}</dd>
@@ -68,5 +70,6 @@
                 </div>
             @endif
         </div>
+    </div>
     </div>
 @endsection

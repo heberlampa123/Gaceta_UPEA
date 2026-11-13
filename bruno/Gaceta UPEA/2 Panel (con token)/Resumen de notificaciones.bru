@@ -1,0 +1,31 @@
+meta {
+  name: Resumen de notificaciones
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8000/api/notificaciones/resumen
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.no_leidas: isNumber
+  res.body.recientes: isArray
+}
+
+script:post-response {
+  // Guarda la primera notificación no leída para «Marcar una como leída».
+  const pendiente = res.getBody().recientes.find(n => !n.leida);
+  if (pendiente) bru.setVar("idNotificacion", pendiente.id);
+}
+
+docs {
+  Lo mismo que consulta la campana del panel: cantidad de no leídas y las 6 más recientes.
+}

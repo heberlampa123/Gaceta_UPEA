@@ -93,7 +93,7 @@ database/
 docker/                  pgAdmin y script de la base de pruebas
 docs/                    Plan de trabajo, mapa del código y manuales
 resources/
-  css/app.css            Estilos propios
+  scss/app.scss          Tema visual (Bootstrap personalizado con Sass)
   js/                    app.js y módulos (portal, notificaciones, campos adicionales, flujo)
   views/                 Vistas Blade (layouts, auth, panel, portal, errors)
 routes/
@@ -271,7 +271,7 @@ Ejemplo de respuesta de `GET /api/documentos?q=reglamento`:
 ## 10. Interfaz (frontend)
 
 - **Plantillas**: `layouts/base` (común), `layouts/panel` (menú lateral, campana, usuario), `layouts/portal` (encabezado institucional).
-- **Estilos**: Bootstrap 5 + `resources/css/app.css` (variables `--gaceta-*`). El diseño actual es provisional; el definitivo corresponde a la Fase 9.
+- **Estilos**: Bootstrap 5.3 personalizado con Sass en `resources/scss/app.scss` (paleta del escudo de la UPEA, fuente Inter instalada en el proyecto, franja con los colores de la wiphala). Solo modo claro en la primera versión (`$enable-dark-mode: false`). Logo: `public/img/logo-upea.png`.
 - **JavaScript** (`resources/js/`), todos los módulos se inician desde `app.js`:
 
 | Módulo | Función |

@@ -2,14 +2,12 @@
 
 @section('titulo', 'Editar usuario')
 
-@section('contenido')
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('panel.usuarios.index') }}">Usuarios</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ $usuario->nombre_usuario }}</li>
-        </ol>
-    </nav>
+@section('migas')
+    <li class="breadcrumb-item"><a href="{{ route('panel.usuarios.index') }}">Usuarios</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ $usuario->nombre_usuario }}</li>
+@endsection
 
+@section('contenido')
     <h1 class="h3 mb-3">{{ $usuario->nombre_completo }}</h1>
 
     <div class="row g-3">
@@ -17,11 +15,11 @@
             <form method="POST" action="{{ route('panel.usuarios.update', $usuario) }}" class="card border-0 shadow-sm">
                 @csrf
                 @method('PUT')
-                <div class="card-header bg-white"><h2 class="h6 mb-0">Datos de la cuenta</h2></div>
+                <div class="card-header bg-body"><h2 class="h6 mb-0">Datos de la cuenta</h2></div>
                 <div class="card-body">
                     @include('panel.usuarios._form')
                 </div>
-                <div class="card-footer bg-white d-flex justify-content-end gap-2">
+                <div class="card-footer bg-body d-flex justify-content-end gap-2">
                     <a href="{{ route('panel.usuarios.index') }}" class="btn btn-outline-secondary">Volver</a>
                     <button type="submit" class="btn btn-gaceta"><i class="bi bi-check-lg me-1"></i> Guardar cambios</button>
                 </div>
@@ -30,7 +28,7 @@
 
         <div class="col-xl-4">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white"><h2 class="h6 mb-0">Estado de la cuenta</h2></div>
+                <div class="card-header bg-body"><h2 class="h6 mb-0">Estado de la cuenta</h2></div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item d-flex justify-content-between">
                         <span>Estado</span>
