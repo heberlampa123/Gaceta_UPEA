@@ -22,6 +22,11 @@
             <h1 class="h4 mb-0">{{ $documento->nombreCorto() }}</h1>
             <p class="text-body-secondary mb-0">{{ $documento->titulo }}</p>
         </div>
+        @if ($documento->activo && $documento->estadoActual->es_publico)
+            <a href="{{ route('portal.documentos.show', $documento) }}" target="_blank" rel="noopener" class="btn btn-outline-success ms-auto">
+                <i class="bi bi-globe me-1"></i> Ver en el portal
+            </a>
+        @endif
         @can('update', $documento)
             <a href="{{ route('panel.documentos.edit', $documento) }}" class="btn btn-outline-primary ms-auto">
                 <i class="bi bi-pencil me-1"></i> Editar datos

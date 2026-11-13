@@ -118,6 +118,25 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 
 ---
 
+## Fase 6 — Portal público
+
+| Función | Detalle | Archivo(s) |
+|---|---|---|
+| **Búsqueda (lógica compartida)** | La misma consulta para la página y la API; solo publicados y activos. | `app/Services/ConsultaPublica.php` (limpieza de filtros :34, búsqueda :60, opciones de filtros :83) |
+| **Resultados por página y órdenes** | 10 por página; más recientes, más antiguos, número. | `ConsultaPublica.php:20` (`POR_PAGINA`) y `:22` (`ORDENES`) |
+| **Página del portal** | Buscador, filtros, resultados y paginación (Figura 3). | **Controlador:** `app/Http/Controllers/Portal/PortalController.php:24` (`index`)<br>**Vista:** `resources/views/portal/inicio.blade.php`<br>**Encabezado y pie:** `resources/views/layouts/portal.blade.php` |
+| **Diseño de cada resultado** | Una sola plantilla para el servidor y para Axios. | `resources/views/portal/_resultado.blade.php` |
+| **Búsqueda sin recargar (Axios)** | Al cambiar filtros o escribir (espera 400 ms), consulta la API y redibuja; actualiza la URL. | `resources/js/portal.js` (espera :12, dibujo :39, búsqueda :69, llamada Axios :81) |
+| **API pública (JSON)** | `GET /api/documentos?q=&tipo=&gestion=&numero=&desde=&hasta=&instancia=&orden=&page=` | **Controlador:** `app/Http/Controllers/Api/DocumentoPublicoController.php:21`<br>**Ruta:** `routes/api.php` |
+| **Datos públicos de un documento** | Qué campos se muestran/exponen (sin datos internos). | `app/Http/Resources/DocumentoPublicoResource.php` |
+| **Ficha pública** | PDF, datos, campos adicionales y huella SHA-256. | **Controlador:** `PortalController.php:39` (`show`)<br>**Vista:** `resources/views/portal/documento.blade.php` |
+| **PDF público** | Versión vigente, en el navegador o descarga. | `PortalController.php:48` (`pdf`); regla «solo publicados»: `:67` |
+| **Límites de uso** | 60 búsquedas por minuto (API) y 30 descargas por minuto, por IP. | `app/Providers/AppServiceProvider.php:32` y `:33` |
+| **Rutas** | `/`, `/documentos/{id}`, `/documentos/{id}/pdf`, `/api/documentos`. | `routes/web.php` (sección «Portal público») y `routes/api.php` |
+| **Pruebas** | Visibilidad, ficha y PDF, versión vigente, filtros, API, límite y campos adicionales. | `tests/Feature/Portal/PortalPublicoTest.php` |
+
+---
+
 ## Cambios frecuentes
 
 | Si se solicita… | Cambiar esto |
@@ -137,6 +156,10 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 | Permitir que quien registra también apruebe | Quitar `revisorDistinto: true` en `FlujoDocumental.php` y en `DocumentoPolicy.php` |
 | Cambiar los textos automáticos del seguimiento | `FlujoDocumental.php` (segundo argumento de `unir(...)` en cada acción) |
 | Agregar una pestaña a la bandeja | `RevisionController.php:17` (`BANDEJAS`) |
+| Mostrar más resultados por página | `ConsultaPublica.php:20` (`POR_PAGINA`) |
+| Cambiar los límites de búsquedas o descargas | `AppServiceProvider.php:32` y `:33` |
+| Mostrar u ocultar un dato en los resultados del portal | `DocumentoPublicoResource.php` + `portal/_resultado.blade.php` (atributo `data-campo`) |
+| Cambiar el tiempo de espera al escribir en el buscador | `resources/js/portal.js:12` |
 | Cambiar los datos del administrador inicial | `.env` (`ADMIN_USUARIO`, `ADMIN_CORREO`, `ADMIN_CONTRASENA`) |
 
 ---

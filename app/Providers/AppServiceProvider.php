@@ -28,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
         // Límite de intentos de inicio de sesión por dirección IP (además del bloqueo por cuenta).
         RateLimiter::for('login', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
 
+        // Portal público: límites por IP para la búsqueda (API) y la descarga de PDF.
+        RateLimiter::for('portal', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
+        RateLimiter::for('descargas', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
+
         /*
          * Autorización por código de permiso (4.4.5): cualquier habilidad con forma
          * "modulo.accion" se resuelve con los permisos de los roles del usuario.

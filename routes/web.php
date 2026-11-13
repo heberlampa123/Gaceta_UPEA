@@ -10,6 +10,7 @@ use App\Http\Controllers\Panel\RolController;
 use App\Http\Controllers\Panel\TipoDocumentalController;
 use App\Http\Controllers\Panel\UsuarioController;
 use App\Http\Controllers\Panel\VersionDocumentoController;
+use App\Http\Controllers\Portal\PortalController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,7 +18,10 @@ use Illuminate\Support\Facades\Route;
 | Portal público (Fase 6: búsqueda y consulta de documentos publicados)
 |--------------------------------------------------------------------------
 */
-Route::view('/', 'portal.inicio')->name('portal.inicio');
+Route::get('/', [PortalController::class, 'index'])->name('portal.inicio');
+Route::get('/documentos/{documento}', [PortalController::class, 'show'])->whereNumber('documento')->name('portal.documentos.show');
+Route::get('/documentos/{documento}/pdf', [PortalController::class, 'pdf'])->whereNumber('documento')
+    ->middleware('throttle:descargas')->name('portal.documentos.pdf');
 
 /*
 |--------------------------------------------------------------------------

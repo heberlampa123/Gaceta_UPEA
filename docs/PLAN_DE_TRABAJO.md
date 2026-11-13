@@ -96,13 +96,16 @@
 - [x] `DemoSeeder` recorre el flujo real (con devoluciones, correcciones, aprobaciones y publicaciones).
 - [x] 9 pruebas nuevas (65 en total).
 
-### Fase 6 — Portal público (RF-06)
-- [ ] Página pública (Figura 3): encabezado institucional, buscador, filtros (tipo, gestión, número, fecha de emisión, instancia emisora), listado paginado.
-- [ ] Solo muestra documentos en estados con `es_publico = true` y `activo = true`.
-- [ ] Ficha del documento con visor PDF embebido y descarga, servidos por controlador (nunca la ruta directa del archivo) y solo la versión vigente.
-- [ ] Endpoints API JSON públicos de búsqueda (con *rate limiting*), consumidos con **Axios** para filtrar sin recargar.
-
-**Entregable:** cualquier visitante busca, ve y descarga resoluciones publicadas.
+### Fase 6 — Portal público (RF-06) ✅ COMPLETADA (12/11/2026)
+- [x] Portal (Figura 3): encabezado institucional, buscador (número, título o palabras clave), filtros (tipo, gestión, número, rango de fecha de emisión, instancia emisora, orden), listado paginado y pie de página.
+- [x] Solo documentos **publicados y activos**; los demás devuelven 404 (ficha y PDF).
+- [x] Ficha pública con visor PDF, descarga, datos (incluye campos adicionales del tipo) y huella SHA-256 para verificar copias.
+- [x] Se entrega siempre la **versión vigente** del PDF, servida por controlador (nunca por URL directa).
+- [x] API pública `GET /api/documentos` (JSON, paginada), consumida con **Axios** para filtrar sin recargar; actualiza la URL para compartir la búsqueda. Sin datos internos.
+- [x] Funciona sin JavaScript (formulario y paginación normales).
+- [x] Límites por IP: 60 búsquedas/min (API) y 30 descargas/min.
+- [x] Botón «Ver en el portal» en la ficha del panel para documentos publicados.
+- [x] 7 pruebas nuevas (72 en total).
 
 ### Fase 7 — Notificaciones, auditoría y tablero (RF-08, RF-09)
 - [ ] Notificaciones: `NUEVO_PENDIENTE` → usuarios con permiso de revisar; `OBSERVADO` y `APROBADO` → encargado que registró; `PUBLICADO` → encargado (y revisores).

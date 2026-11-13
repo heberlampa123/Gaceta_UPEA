@@ -5,12 +5,14 @@ import * as bootstrap from 'bootstrap';
 import './bootstrap';
 import { iniciarCamposAdicionales } from './campos-adicionales';
 import { iniciarFlujoDocumental } from './flujo-documental';
+import { iniciarPortal } from './portal';
 
 window.bootstrap = bootstrap;
 
 document.addEventListener('DOMContentLoaded', () => {
     iniciarCamposAdicionales();
     iniciarFlujoDocumental();
+    iniciarPortal();
 
     // Confirmación para acciones sensibles: <form data-confirmar="¿Seguro?">
     document.querySelectorAll('form[data-confirmar]').forEach((form) => {
