@@ -5,8 +5,8 @@ namespace Database\Seeders;
 use App\Models\Documento;
 use App\Models\EstadoDocumento;
 use App\Models\Rol;
-use App\Models\SeguimientoDocumento;
 use App\Models\Usuario;
+use App\Services\FlujoDocumental;
 use App\Services\GestionDocumental;
 use App\Support\PdfSimple;
 use Illuminate\Database\Seeder;
@@ -16,20 +16,13 @@ use Illuminate\Http\UploadedFile;
  * Datos de demostración SOLO para desarrollo:
  *   php artisan db:seed --class=DemoSeeder
  *
- * Crea un Encargado y un Revisor (contraseña: "password") y 20 resoluciones con su PDF,
- * registradas mediante el mismo servicio que usa el sistema (GestionDocumental).
+ * Crea un Encargado y un Revisor (contraseña: "password") y 20 resoluciones con su PDF.
+ * Cada documento pasa por el flujo real (GestionDocumental y FlujoDocumental), de modo que
+ * su seguimiento, observaciones y auditoría quedan igual que si se hubieran trabajado en el panel.
  */
 class DemoSeeder extends Seeder
 {
-    /** Estado final de demostración => acción de seguimiento con la que se llega a él. */
-    private const ACCION_POR_ESTADO = [
-        EstadoDocumento::PENDIENTE_REVISION => SeguimientoDocumento::ACCION_ENVIO_REVISION,
-        EstadoDocumento::OBSERVADO => SeguimientoDocumento::ACCION_DEVOLUCION,
-        EstadoDocumento::APROBADO => SeguimientoDocumento::ACCION_APROBACION,
-        EstadoDocumento::PUBLICADO => SeguimientoDocumento::ACCION_PUBLICACION,
-    ];
-
-    public function run(GestionDocumental $gestion): void
+    public function run(GestionDocumental $gestion, FlujoDocumental $flujo): void
     {
         if (app()->isProduction()) {
             $this->command?->error('DemoSeeder no puede ejecutarse en producción.');
@@ -72,43 +65,61 @@ class DemoSeeder extends Seeder
 
                 $documento = $gestion->registrar($datos, $this->pdfTemporal($datos), $encargado);
 
-                if ($estado !== EstadoDocumento::BORRADOR) {
-                    $this->asignarEstado($documento, $estado, $estado === EstadoDocumento::PENDIENTE_REVISION ? $encargado : $revisor);
-                }
+                $this->llevarAlEstado($documento, $estado, $gestion, $flujo, $encargado, $revisor, $i);
             }
         }
     }
 
-    private function pdfTemporal(array $datos): UploadedFile
+    /** Recorre el flujo hasta el estado deseado; algunos documentos pasan por una devolución y corrección. */
+    private function llevarAlEstado(Documento $documento, string $estado, GestionDocumental $gestion, FlujoDocumental $flujo, Usuario $encargado, Usuario $revisor, int $indice): void
+    {
+        if ($estado === EstadoDocumento::BORRADOR) {
+            return;
+        }
+
+        $flujo->enviarARevision($documento, $encargado);
+
+        if ($estado === EstadoDocumento::PENDIENTE_REVISION) {
+            return;
+        }
+
+        // Los observados, y uno de cada tres de los demás, reciben observaciones.
+        if ($estado === EstadoDocumento::OBSERVADO || $indice % 3 === 0) {
+            $flujo->devolver($documento, $revisor, [
+                'El número de resolución del encabezado no coincide con el registrado.',
+                'Falta la firma del Secretario General en la última página.',
+            ]);
+
+            if ($estado === EstadoDocumento::OBSERVADO) {
+                return;
+            }
+
+            $documento->refresh();
+            $gestion->agregarVersion($documento, $this->pdfTemporal($documento->only(['numero', 'titulo', 'descripcion']), 'corregida'), 'Corrección del encabezado y firma', $encargado);
+
+            $respuestas = $documento->observaciones()->pendientes()->pluck('observacion.id_observacion')
+                ->mapWithKeys(fn ($id) => [$id => 'Se corrigió en la versión 2.'])
+                ->all();
+
+            $flujo->reenviar($documento, $encargado, $respuestas);
+        }
+
+        $flujo->aprobar($documento, $revisor);
+
+        if ($estado === EstadoDocumento::PUBLICADO) {
+            $flujo->publicar($documento, $revisor);
+        }
+    }
+
+    private function pdfTemporal(array $datos, string $variante = ''): UploadedFile
     {
         $ruta = tempnam(sys_get_temp_dir(), 'demo').'.pdf';
 
         file_put_contents($ruta, PdfSimple::generar(
             "Resolución del HCU N.º {$datos['numero']}",
-            [$datos['titulo'], '', $datos['descripcion'], '', 'Documento de demostración — Gaceta Universitaria UPEA.'],
+            [$datos['titulo'], '', (string) $datos['descripcion'], '', trim("Documento de demostración {$variante} — Gaceta Universitaria UPEA.")],
         ));
 
         return new UploadedFile($ruta, 'resolucion_'.str_replace('/', '-', $datos['numero']).'.pdf', 'application/pdf', null, true);
-    }
-
-    /** Lleva el documento directamente al estado de demostración (el flujo real se implementa en la Fase 5). */
-    private function asignarEstado(Documento $documento, string $estado, Usuario $usuario): void
-    {
-        $anterior = $documento->id_estado_actual;
-        $nuevo = EstadoDocumento::idPorCodigo($estado);
-
-        $documento->forceFill([
-            'id_estado_actual' => $nuevo,
-            'fecha_publicacion' => $estado === EstadoDocumento::PUBLICADO ? now() : null,
-        ])->save();
-
-        SeguimientoDocumento::create([
-            'id_documento' => $documento->id_documento,
-            'id_estado_anterior' => $anterior,
-            'id_estado_nuevo' => $nuevo,
-            'accion' => self::ACCION_POR_ESTADO[$estado],
-            'comentario' => 'Estado asignado para la demostración.',
-            'id_usuario' => $usuario->id_usuario,
-        ]);
     }
 }

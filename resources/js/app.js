@@ -4,11 +4,13 @@ import '../css/app.css'; // después de Bootstrap, para que nuestros estilos ten
 import * as bootstrap from 'bootstrap';
 import './bootstrap';
 import { iniciarCamposAdicionales } from './campos-adicionales';
+import { iniciarFlujoDocumental } from './flujo-documental';
 
 window.bootstrap = bootstrap;
 
 document.addEventListener('DOMContentLoaded', () => {
     iniciarCamposAdicionales();
+    iniciarFlujoDocumental();
 
     // Confirmación para acciones sensibles: <form data-confirmar="¿Seguro?">
     document.querySelectorAll('form[data-confirmar]').forEach((form) => {

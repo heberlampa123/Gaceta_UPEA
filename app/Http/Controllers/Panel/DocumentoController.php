@@ -78,6 +78,9 @@ class DocumentoController extends Controller
             'seguimientos.usuario',
             'seguimientos.estadoNuevo',
             'seguimientos.version',
+            'observaciones.revisor',
+            'observaciones.usuarioAtiende',
+            'observaciones.version',
         ]);
 
         return view('panel.documentos.show', ['documento' => $documento]);

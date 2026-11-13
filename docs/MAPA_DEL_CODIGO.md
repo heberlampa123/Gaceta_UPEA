@@ -96,6 +96,28 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 
 ---
 
+## Fase 5 — Flujo de revisión y publicación
+
+| Función | Detalle | Archivo(s) |
+|---|---|---|
+| **Transiciones permitidas** | Borrador → Pendiente → (Observado ↔ Pendiente) → Aprobado → Publicado. Cualquier otra se rechaza. | `app/Services/FlujoDocumental.php:35` (`TRANSICIONES`) |
+| **Lógica común de cada transición** | Bloquea el documento, verifica el estado, cambia el estado, registra seguimiento y auditoría, emite el evento. | `FlujoDocumental.php:148` (`ejecutar`) |
+| **Enviar a revisión** (Encargado) | Borrador → Pendiente de revisión, con comentario opcional. | **Lógica:** `FlujoDocumental.php:43`<br>**Controlador:** `app/Http/Controllers/Panel/FlujoDocumentalController.php:23`<br>**Permiso y estado:** `app/Policies/DocumentoPolicy.php:31` |
+| **Devolver con observaciones** (Revisor) | Pendiente → Observado. Una o varias observaciones sobre la versión vigente. | **Lógica:** `FlujoDocumental.php:53`<br>**Controlador:** `FlujoDocumentalController.php:49`<br>**Permiso:** `DocumentoPolicy.php:41`<br>**Botón «Agregar otra observación»:** `resources/js/flujo-documental.js` |
+| **Atender observaciones y reenviar** (Encargado) | Observado → Pendiente. Respuesta obligatoria para cada observación pendiente. | **Lógica:** `FlujoDocumental.php:86`<br>**Controlador:** `FlujoDocumentalController.php:34`<br>**Permiso:** `DocumentoPolicy.php:36` |
+| **Aprobar** (Revisor) | Pendiente → Aprobado. No se permite con observaciones pendientes. | **Lógica:** `FlujoDocumental.php:118`<br>**Controlador:** `FlujoDocumentalController.php:64`<br>**Permiso:** `DocumentoPolicy.php:46` |
+| **Publicar** (Revisor / Publicador) | Aprobado → Publicado. Registra la fecha de publicación; el documento queda visible en el portal. | **Lógica:** `FlujoDocumental.php:133`<br>**Controlador:** `FlujoDocumentalController.php:76`<br>**Permiso:** `DocumentoPolicy.php:51` |
+| **Revisor distinto del registrador** | Quien registró el documento no puede revisarlo, aprobarlo ni publicarlo. | **Pantallas y rutas:** `DocumentoPolicy.php:79`<br>**Servicio (doble control):** `FlujoDocumental.php:170` |
+| **Bandeja del revisor** | Pestañas: pendientes, aprobados por publicar, devueltos. Excluye los documentos propios. | **Controlador:** `app/Http/Controllers/Panel/RevisionController.php` (pestañas :17, consulta :23)<br>**Pantalla:** `resources/views/panel/revision/index.blade.php` |
+| **Panel de acciones en la ficha** | Muestra solo las acciones permitidas al usuario según su rol y el estado. | `resources/views/panel/documentos/_flujo.blade.php` |
+| **Historial de observaciones** | Observaciones por versión, con su respuesta y quién la atendió. | `resources/views/panel/documentos/_observaciones.blade.php` |
+| **Mensaje de acción no permitida** | Si el estado cambió mientras tanto (dos usuarios a la vez). | `app/Exceptions/TransicionNoPermitida.php` |
+| **Evento para notificaciones** | Se emite tras cada transición; lo usará la Fase 7. | `app/Events/DocumentoCambioDeEstado.php` |
+| **Rutas** | `/panel/documentos/{id}/enviar-revision`, `/reenviar`, `/devolver`, `/aprobar`, `/publicar` y `/panel/revision`. | `routes/web.php` (secciones «Flujo de revisión» y «Bandeja») |
+| **Pruebas** | Recorrido completo, transiciones no permitidas, roles, revisor distinto, observaciones, bandeja, concurrencia y datos de demostración. | `tests/Feature/Panel/FlujoDocumentalTest.php` |
+
+---
+
 ## Cambios frecuentes
 
 | Si se solicita… | Cambiar esto |
@@ -112,6 +134,9 @@ Las rutas parten de la carpeta del proyecto (`C:\SigGacetaUniv`). El número des
 | Permitir editar en otros estados | `app/Models/Documento.php` → `ESTADOS_EDITABLES` |
 | Agregar un nuevo tipo de dato para los campos (ej.: correo) | `TipoDocumental.php` → `TIPOS_CAMPO`, `reglasMetadatos`, `normalizarMetadatos`, `formatearValor` + `_metadatos.blade.php` (campo del formulario) |
 | Cambiar el máximo de campos por tipo | `GuardarTipoDocumentalRequest.php` → `MAX_CAMPOS` |
+| Permitir que quien registra también apruebe | Quitar `revisorDistinto: true` en `FlujoDocumental.php` y en `DocumentoPolicy.php` |
+| Cambiar los textos automáticos del seguimiento | `FlujoDocumental.php` (segundo argumento de `unir(...)` en cada acción) |
+| Agregar una pestaña a la bandeja | `RevisionController.php:17` (`BANDEJAS`) |
 | Cambiar los datos del administrador inicial | `.env` (`ADMIN_USUARIO`, `ADMIN_CORREO`, `ADMIN_CONTRASENA`) |
 
 ---

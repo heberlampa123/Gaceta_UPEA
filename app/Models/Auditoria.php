@@ -25,6 +25,12 @@ class Auditoria extends Model
 
     public const ACTIVAR = 'ACTIVAR';
 
+    public const ENVIAR_REVISION = 'ENVIAR_REVISION';
+
+    public const DEVOLVER = 'DEVOLVER';
+
+    public const APROBAR = 'APROBAR';
+
     public const PUBLICAR = 'PUBLICAR';
 
     public const BLOQUEO_CUENTA = 'BLOQUEO_CUENTA';
@@ -71,6 +77,9 @@ class Auditoria extends Model
         self::MODIFICAR => 'Modificación',
         self::DESACTIVAR => 'Desactivación',
         self::ACTIVAR => 'Activación',
+        self::ENVIAR_REVISION => 'Envío a revisión',
+        self::DEVOLVER => 'Devolución con observaciones',
+        self::APROBAR => 'Aprobación para publicación',
         self::PUBLICAR => 'Publicación',
         self::BLOQUEO_CUENTA => 'Bloqueo de cuenta',
         self::DESBLOQUEO_CUENTA => 'Desbloqueo de cuenta',

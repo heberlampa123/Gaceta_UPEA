@@ -85,8 +85,9 @@
             </div>
         </div>
 
-        {{-- Columna lateral: versiones e historial --}}
+        {{-- Columna lateral: acciones del flujo, versiones, observaciones e historial --}}
         <div class="col-xl-4">
+            @include('panel.documentos._flujo')
             @can('agregarVersion', $documento)
                 <form method="POST" action="{{ route('panel.documentos.versiones.store', $documento) }}" enctype="multipart/form-data" class="card border-0 shadow-sm mb-3">
                     @csrf
@@ -146,6 +147,8 @@
                     @endforelse
                 </ul>
             </div>
+
+            @include('panel.documentos._observaciones')
 
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white"><h2 class="h6 mb-0"><i class="bi bi-clock-history me-1"></i> Seguimiento</h2></div>

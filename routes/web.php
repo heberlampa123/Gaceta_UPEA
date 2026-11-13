@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Panel\DocumentoController;
+use App\Http\Controllers\Panel\FlujoDocumentalController;
 use App\Http\Controllers\Panel\InicioController;
 use App\Http\Controllers\Panel\PerfilController;
+use App\Http\Controllers\Panel\RevisionController;
 use App\Http\Controllers\Panel\RolController;
 use App\Http\Controllers\Panel\TipoDocumentalController;
 use App\Http\Controllers\Panel\UsuarioController;
@@ -57,7 +59,19 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'cuenta'])->group(fu
         Route::post('/documentos/{documento}/versiones', [VersionDocumentoController::class, 'store'])->name('documentos.versiones.store');
         Route::get('/documentos/{documento}/versiones/{version}/archivo', [VersionDocumentoController::class, 'archivo'])->name('documentos.versiones.archivo');
         Route::post('/documentos/{documento}/versiones/{version}/verificar', [VersionDocumentoController::class, 'verificar'])->name('documentos.versiones.verificar');
+
+        // Flujo de revisión y publicación (Fase 5): permiso, estado y revisor distinto en DocumentoPolicy.
+        Route::controller(FlujoDocumentalController::class)->prefix('/documentos/{documento}')->name('documentos.')->group(function () {
+            Route::post('/enviar-revision', 'enviar')->name('enviar');
+            Route::post('/reenviar', 'reenviar')->name('reenviar');
+            Route::post('/devolver', 'devolver')->name('devolver');
+            Route::post('/aprobar', 'aprobar')->name('aprobar');
+            Route::post('/publicar', 'publicar')->name('publicar');
+        });
     });
+
+    // Bandeja del Revisor / Publicador (Fase 5)
+    Route::get('/revision', [RevisionController::class, 'index'])->middleware('can:documento.revisar')->name('revision.index');
 
     // Tipos documentales (Fase 4)
     Route::middleware('can:tipo_documental.gestionar')->group(function () {

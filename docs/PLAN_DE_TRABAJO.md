@@ -85,15 +85,16 @@
 - [x] Auditoría del alta y la modificación de tipos.
 - [x] 7 pruebas nuevas (56 en total).
 
-### Fase 5 — Flujo de revisión y publicación (RF-03, RF-07)
-- [ ] Servicio de **máquina de estados** con las 5 transiciones permitidas (sección 4.4.10); cualquier otra se rechaza.
-- [ ] Cada transición, en una transacción: actualiza `id_estado_actual`, inserta en `seguimiento_documento`, dispara notificación y auditoría.
-- [ ] Bandeja del Revisor: pendientes de revisión, visor PDF, registrar observaciones sobre la versión.
-- [ ] Atención de observaciones por el Encargado (respuesta + nueva versión) y reenvío.
-- [ ] Aprobar y publicar (registra `fecha_publicacion`).
-- [ ] Línea de tiempo del documento (como el ejemplo de la sección 2.4).
-
-**Entregable:** flujo completo Borrador → Pendiente → (Observado ↔ Pendiente) → Aprobado → Publicado.
+### Fase 5 — Flujo de revisión y publicación (RF-03, RF-07) ✅ COMPLETADA (12/11/2026)
+- [x] Servicio `FlujoDocumental` con las **5 transiciones** de la sección 4.4.10; cualquier otra se rechaza. Cada transición bloquea el documento, verifica su estado, registra seguimiento y auditoría en una transacción.
+- [x] Encargado: enviar a revisión; atender **todas** las observaciones (respuesta obligatoria) y reenviar.
+- [x] Revisor / Publicador: bandeja con pestañas (pendientes, aprobados por publicar, devueltos); devolver con una o varias observaciones sobre la versión vigente; aprobar; publicar (registra `fecha_publicacion`).
+- [x] **El mismo Revisor / Publicador aprueba y publica** (decisión 12/11/2026).
+- [x] **Nadie revisa, aprueba ni publica un documento que registró** (decisión 12/11/2026), aunque el administrador le asigne ambos roles.
+- [x] Ficha del documento con panel de acciones según el rol y el estado, historial de observaciones con sus respuestas y seguimiento completo (sección 2.4).
+- [x] Evento `DocumentoCambioDeEstado` emitido tras cada transición (lo usarán las notificaciones de la Fase 7).
+- [x] `DemoSeeder` recorre el flujo real (con devoluciones, correcciones, aprobaciones y publicaciones).
+- [x] 9 pruebas nuevas (65 en total).
 
 ### Fase 6 — Portal público (RF-06)
 - [ ] Página pública (Figura 3): encabezado institucional, buscador, filtros (tipo, gestión, número, fecha de emisión, instancia emisora), listado paginado.
